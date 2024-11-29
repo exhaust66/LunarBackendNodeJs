@@ -1,46 +1,46 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/sequelize');
+const User = require('./user');
+const sequelize = require('../configs/sequelize');
 
 const Student = sequelize.define('Student', {
-    firstName: {
+   enrolledDate: {
+    type: DataTypes.DATE,
+    allowNull: false,
+   },
+   appliedInternships: {
+    type: DataTypes.STRING,
+    allowNull: false,
+   },
+   appliedTrainings: {
+    type: DataTypes.STRING,
+    allowNull: false,
+   },
+   certificates: {
+    type: DataTypes.STRING,
+    allowNull: true,
+   },
+});
+
+Student.belongsTo(User, { foreignKey: 'userId' });
+
+const Otp = sequelize.define('Otp', {
+    studentId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'Students',
+            key: 'id',
+        },
+        onDelete: 'CASCADE',
+    },
+    resetOtp: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    lastName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    password: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    phoneNumber: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    address: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    dateOfBirth: {
+    otpExpiry: {
         type: DataTypes.DATE,
         allowNull: false,
     },
-    
-});
-const Otp=sequelize.define('Otp',{
-    resetOtp: {
-        type: DataTypes.STRING, // Corrected from Sequelize.STRING
-        allowNull: true,
-    },
-    otpExpiry: {
-        type: DataTypes.DATE, // Corrected from Sequelize.DATE
-        allowNull: true,
-    },  
 });
 
-module.exports = {Student,Otp};
+module.exports = { Student, Otp };

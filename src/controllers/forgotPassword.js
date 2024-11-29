@@ -1,37 +1,38 @@
-
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
-const Student = require('../models/student');
+const { Student, Otp } = require('../models/student');
 
 // Request OTP
 const requestOTP = async (req, res) => {
     const { email } = req.body;
 
     try {
-        // Check if the student exists
+        // Check if student exists
         const student = await Student.findOne({ where: { email } });
         if (!student) {
             return res.status(404).json({ message: 'Student not found!' });
         }
 
-        // Generate a 6-digit OTP
+        // Generate OTP and hash it
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const hashedOtp = await bcrypt.hash(otp, 10);
 
-        // Hash the OTP for security
-        const hashedOTP = await bcrypt.hash(otp, 10);
+        // Set OTP expiry (10 minutes from now)
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-        // Store hashed OTP and expiry time in the database (e.g., in Student model)
-        student.resetOtp = hashedOTP; // Add resetOtp and otpExpiry fields in the model
-        student.otpExpiry = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
-        await student.save();
+        // Store OTP in the Otp table
+        await Otp.create({
+            student_id: student.id,
+            resetOtp: hashedOtp,
+            otpExpiry: expiresAt,
+        });
 
         // Send OTP via email
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: process.env.EMAIL_USER, // Use your email address
-                pass: process.env.EMAIL_PASS, // Use your email password or app password
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
             },
         });
 
@@ -44,47 +45,48 @@ const requestOTP = async (req, res) => {
 
         await transporter.sendMail(mailOptions);
 
-        res.status(200).json({ message: 'OTP sent to email' });
+        res.status(200).json({ message: 'OTP sent to email.' });
     } catch (error) {
         console.error('Error sending OTP:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
 };
 
-// Reset Password using OTP
+// Reset Password with OTP
 const resetPasswordWithOTP = async (req, res) => {
     const { email, otp, newPassword } = req.body;
 
     try {
-        // Check if the student exists
+        // Check if student exists
         const student = await Student.findOne({ where: { email } });
         if (!student) {
             return res.status(404).json({ message: 'Student not found!' });
         }
 
-        // Verify OTP and expiry
-        if (!student.resetOtp || !student.otpExpiry || student.otpExpiry < Date.now()) {
+        // Fetch OTP record from Otp table
+        const otpRecord = await Otp.findOne({ where: { student_id: student.id } });
+        if (!otpRecord || otpRecord.otpExpiry < Date.now()) {
             return res.status(400).json({ message: 'OTP has expired. Please request a new one.' });
         }
 
-        const isOTPValid = await bcrypt.compare(otp, student.resetOtp);
-        if (!isOTPValid) {
-            return res.status(400).json({ message: 'Invalid OTP' });
+        // Verify OTP
+        const isOtpValid = await bcrypt.compare(otp, otpRecord.resetOtp);
+        if (!isOtpValid) {
+            return res.status(400).json({ message: 'Invalid OTP.' });
         }
 
-        // Hash the new password
+        // Hash and update the password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        // Update the student's password and clear OTP fields
         student.password = hashedPassword;
-        student.resetOtp = null; // Clear OTP
-        student.otpExpiry = null; // Clear expiry
         await student.save();
 
-        res.status(200).json({ message: 'Password reset successful' });
+        // Delete OTP record after successful use
+        await Otp.destroy({ where: { student_id: student.id } });
+
+        res.status(200).json({ message: 'Password reset successful.' });
     } catch (error) {
         console.error('Error resetting password:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Internal server error.' });
     }
 };
 

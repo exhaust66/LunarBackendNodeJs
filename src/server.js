@@ -1,5 +1,6 @@
 const express=require('express');
 const userRoutes=require('./routes/userRoutes');
+const studentRoutes=require('./routes/studentRoutes');
 const adminRoutes=require('./routes/adminRoutes');
 const sequelize=require('./configs/sequelize');
 
@@ -11,6 +12,7 @@ require('./sync');
 app.use(express.json());
 
 app.use('/api/users',userRoutes);
+app.use('/api/students', studentRoutes);
 app.use('/api/admin',adminRoutes)
 
 // Global error handler

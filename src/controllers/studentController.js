@@ -1,10 +1,10 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const Student = require('../models/student');
+const {Student} = require('../models/student');
 
 // Register new student
 const registerStudent = async (req, res) => {
-    const { firstName, lastName, email, password, phoneNumber, address, dateOfBirth } = req.body;
+    const { enrolledDate,appliedInternships,appliedTrainings,certificates } = req.body;
 
     try {
         // Check for missing required fields
@@ -30,9 +30,9 @@ const registerStudent = async (req, res) => {
             phoneNumber,
             address,
             dateOfBirth,
-            resetOtp: null, // No OTP needed at registration
-            otpExpiry: null, // No OTP expiry set at registration
         });
+
+
 
         // Send success response with the student details
         res.status(201).json({
