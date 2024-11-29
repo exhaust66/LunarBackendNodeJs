@@ -1,10 +1,10 @@
 const express=require('express');
-const app=express();
 const userRoutes=require('./routes/userRoutes');
 require('dotenv').config();
 const sequelize=require('./configs/sequelize');
 require('./sync');
 
+const app=express();
 app.use(express.json());
 
 app.use('/api/users',userRoutes);

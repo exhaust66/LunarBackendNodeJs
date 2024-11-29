@@ -1,6 +1,8 @@
-const sequelize=require('../configs/sequelize');
+import sequelize from "../configs/sequelize";
+import { DataTypes } from "sequelize";
+import User from "./user";
 
-module.exports=sequelize.define('Trainers',{
+const Trainer=sequelize.define('Trainer',{
         userId: {
           type: DataTypes.INTEGER,
           allowNull: false,
@@ -18,7 +20,9 @@ module.exports=sequelize.define('Trainers',{
             allowNull: false,
         },
         assignedTraining: {
-            type: DataTypes.JSON, // Use JSON to store array of phone objects
+            type: DataTypes.ARRAY, // Use JSON to store array of phone objects
             allowNull: true,
         },
 });
+
+module.exports= Trainer;
