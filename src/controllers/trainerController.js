@@ -16,6 +16,7 @@ const checkTrainerAuthenticity = async(req,res,next) =>{
             return res.status(500).json({success:false, message: `Internal Error`}); // Handle errors
         }
 
+        
         req.userId = isUser.id;
         next(); // Proceed to the next middleware or route handler
     } catch (error) {
@@ -39,6 +40,11 @@ const createTrainer = async (req,res)=>{
         if(!newTrainer){
             return res.status(400).json({success:false, message: 'New Trainer creation failed!'})
         }
+
+        //changing the status of user at users table to verified
+        const user = await User.findOne({where:{id:userId}});
+        user.verification = 'Verified';
+        user.save();
 
         return res.status(201).json({
             success:true,
