@@ -1,6 +1,6 @@
-import sequelize from "../configs/sequelize";
-import { DataTypes } from "sequelize";
-import User from "./user";
+const { DataTypes } = require('sequelize');
+const sequelize=require('../configs/sequelize');
+const User = require('./user');
 
 const Trainer=sequelize.define('Trainer',{
         userId: {
@@ -13,16 +13,16 @@ const Trainer=sequelize.define('Trainer',{
         },
         description: {
           type: DataTypes.STRING,
-          allowNull: false,
+          allowNull: true,
         },
         experience: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true,
         },
         assignedTraining: {
-            type: DataTypes.ARRAY, // Use JSON to store array of phone objects
-            allowNull: true,
+            type: DataTypes.JSON, // Use JSON to store array of phone objects
+            defaultValue:[], // empty JSON that matches MYsql type
         },
 });
 
-module.exports= Trainer;
+module.exports = Trainer;

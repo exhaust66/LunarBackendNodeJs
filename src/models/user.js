@@ -32,6 +32,12 @@ const User=sequelize.define('User',{
         type: DataTypes.STRING,
         allowNull: true,
       },
+      verification:{
+        type: DataTypes.ENUM('Verified','Pending'),
+        defaultValue:'Pending',
+      }
+},{
+  tableName:'users'
 });
 
-module.exports = User;
+module.exports=User;

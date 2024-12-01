@@ -1,6 +1,6 @@
+const { DataTypes } = require('sequelize');
 const sequelize=require('../configs/sequelize');
-const {DataTypes}=require('sequelize');
-import User from "./user";
+const User= require("./user");
 
 const Client=sequelize.define('Client',{
     userId:{
@@ -29,4 +29,4 @@ const Client=sequelize.define('Client',{
     },
 });
 
-module.exports = Client;
+module.exports= Client;
