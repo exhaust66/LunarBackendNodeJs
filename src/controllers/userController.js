@@ -42,21 +42,21 @@ const  createUser = async (req, res) => {
     }
   };
   
-  // Controller to fetch all users
-   const getUsers = async (req, res) => {
-    try {
-      const users = await User.findAll(); // Retrieve all users from the database
-  
-      // Map through the users array to extract the necessary fields from each user
-      const usersData = users.map(user => {
-        const { id, name, email, role, phone, address, profileImage } = user;
-        return { id, name, email, role, phone, address, profileImage };
-      });
-  
-      return res.status(200).json({usersData}); // Respond with the list of users
-    } catch (err) {
-      return res.status(500).json({ error: err.message }); // Handle errors
-    }
-  };
+// Controller to fetch all users
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.findAll(); // Retrieve all users from the database
+
+    // Map through the users array to extract the necessary fields from each user
+    const usersData = users.map(user => {
+      const { id, name, email, role, phone, address, profileImage } = user;
+      return { id, name, email, role, phone, address, profileImage };
+    });
+
+    return res.status(200).json({usersData}); // Respond with the list of users
+  } catch (err) {
+    return res.status(500).json({ error: err.message }); // Handle errors
+  }
+};
 
   module.exports={createUser,getUsers};

@@ -6,8 +6,6 @@ async function seedAdmin() {
     const adminUsername = "admin"; 
     const adminPassword = process.env.ADMIN_PASSWORD;
 
-    console.log('admin pass', adminPassword); 
-
     if (!adminPassword) {
       console.error('ADMIN_PASSWORD environment variable is not set!');
       return;
@@ -22,7 +20,6 @@ async function seedAdmin() {
         userName: adminUsername,
         password: hashedPassword
       });
-      console.log('Hashed password stored:', hashedPassword);
       console.log('Admin created successfully!');
     } else {
       console.log('Admin already exists');

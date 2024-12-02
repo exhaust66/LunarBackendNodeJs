@@ -1,7 +1,7 @@
 const sequelize=require('../configs/sequelize');
 const {DataTypes}=require('sequelize');
 
-const Users=sequelize.define('Users',{
+const User=sequelize.define('User',{
     name: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -32,6 +32,12 @@ const Users=sequelize.define('Users',{
         type: DataTypes.STRING,
         allowNull: true,
       },
+      verification:{
+        type: DataTypes.ENUM('Verified','Pending'),
+        defaultValue:'Pending',
+      }
+},{
+  tableName:'users'
 });
 
-module.exports=Users;
+module.exports=User;

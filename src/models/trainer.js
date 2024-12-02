@@ -1,6 +1,8 @@
+const { DataTypes } = require('sequelize');
 const sequelize=require('../configs/sequelize');
+const User = require('./user');
 
-module.exports=sequelize.define('Trainers',{
+const Trainer=sequelize.define('Trainer',{
         userId: {
           type: DataTypes.INTEGER,
           allowNull: false,
@@ -11,14 +13,16 @@ module.exports=sequelize.define('Trainers',{
         },
         description: {
           type: DataTypes.STRING,
-          allowNull: false,
+          allowNull: true,
         },
         experience: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true,
         },
         assignedTraining: {
             type: DataTypes.JSON, // Use JSON to store array of phone objects
-            allowNull: true,
+            defaultValue:[], // empty JSON that matches MYsql type
         },
 });
+
+module.exports = Trainer;
