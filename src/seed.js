@@ -1,9 +1,10 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const Admin = require('./models/admin'); 
 
 async function seedAdmin() {
   try {
-    const adminUsername = "admin"; 
+    const adminUsername = process.env.ADMIN_USERNAME; 
     const adminPassword = process.env.ADMIN_PASSWORD;
 
     if (!adminPassword) {
@@ -13,13 +14,19 @@ async function seedAdmin() {
 
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
-    const existingAdmin = await Admin.findOne({ where: { userName: adminUsername } });
+    const existingAdmin = await Admin.findOne({ where: { name: adminUsername } });
 
     if (!existingAdmin) {
-      await Admin.create({
-        userName: adminUsername,
+      const admin = await Admin.create({
+        name: adminUsername,
         password: hashedPassword
       });
+
+      const {id,name} = admin;
+      const token = jwt.sign({ id,name,email:'admin@gmail.com',role:'Admin' }, process.env.JWT_SECRET,{ expiresIn: '1d' }); 
+      
+      console.log("Admin Token:",token); //consoling the user token
+
       console.log('Admin created successfully!');
     } else {
       console.log('Admin already exists');

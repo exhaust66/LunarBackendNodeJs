@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
-const { Student, Otp } = require('../models/student');
+const Otp = require('../models/otp');
+const User = require('../models/user');
 
 // Request OTP
 const requestOTP = async (req, res) => {
@@ -8,9 +9,9 @@ const requestOTP = async (req, res) => {
 
     try {
         // Check if student exists
-        const student = await Student.findOne({ where: { email } });
-        if (!student) {
-            return res.status(404).json({ message: 'Student not found!' });
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found!' });
         }
 
         // Generate OTP and hash it
@@ -22,7 +23,7 @@ const requestOTP = async (req, res) => {
 
         // Store OTP in the Otp table
         await Otp.create({
-            student_id: student.id,
+            userId: user.id,
             resetOtp: hashedOtp,
             otpExpiry: expiresAt,
         });
@@ -58,17 +59,23 @@ const resetPasswordWithOTP = async (req, res) => {
 
     try {
         // Check if student exists
-        const student = await Student.findOne({ where: { email } });
-        if (!student) {
-            return res.status(404).json({ message: 'Student not found!' });
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found!' });
         }
 
         // Fetch OTP record from Otp table
-        const otpRecord = await Otp.findOne({ where: { student_id: student.id } });
-        if (!otpRecord || otpRecord.otpExpiry < Date.now()) {
+        const otpRecord = await Otp.findOne({ where: { userId: user.id } });
+        if (!otpRecord) {
+            return res.status(400).json({ message: 'Invalid OTP. Please request a new one.' });
+        }
+        
+        //delete otp from otps table if expired otp is requested
+        if (otpRecord.otpExpiry < Date.now()) {
+            await Otp.destroy({ where: { userId: user.id } });
             return res.status(400).json({ message: 'OTP has expired. Please request a new one.' });
         }
-
+        
         // Verify OTP
         const isOtpValid = await bcrypt.compare(otp, otpRecord.resetOtp);
         if (!isOtpValid) {
@@ -77,11 +84,11 @@ const resetPasswordWithOTP = async (req, res) => {
 
         // Hash and update the password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        student.password = hashedPassword;
-        await student.save();
+        user.password = hashedPassword;
+        await user.save();
 
         // Delete OTP record after successful use
-        await Otp.destroy({ where: { student_id: student.id } });
+        await Otp.destroy({ where: { userId: user.id } });
 
         res.status(200).json({ message: 'Password reset successful.' });
     } catch (error) {

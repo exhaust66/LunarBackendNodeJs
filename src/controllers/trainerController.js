@@ -1,6 +1,7 @@
 const Trainer =require('../models/trainer');
 const User = require('../models/user');
 
+//middleware for ADMIN to create Trainer id
 const checkTrainerAuthenticity = async(req,res,next) =>{
     try {
         const {userId} = req.body;
