@@ -1,17 +1,18 @@
 const express=require('express');
-const userRoutes=require('./routes/userRoutes');
-const studentRoutes=require('./routes/studentRoutes');
-const adminRoutes=require('./routes/adminRoutes');
-const sequelize=require('./configs/sequelize');
+const authRoutes = require('./routes/authRoutes');
+const userRoutes=require('./routes/users/userRoutes');
+const studentRoutes=require('./routes/users/studentRoutes');
+const adminRoutes=require('./routes/users/adminRoutes');
 
-const app=express();
+//neccessary imports
 require('dotenv').config();
-
 require('./sync');
 
+const app=express();
 app.use(express.json());
 
 //available routes
+app.use('/api/auth',authRoutes)
 app.use('/api/users',userRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/admin',adminRoutes)
