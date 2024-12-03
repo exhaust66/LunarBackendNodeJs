@@ -10,6 +10,8 @@ const Trainer=sequelize.define('Trainer',{
             model: User,
             key: 'id',
           },
+          onDelete: 'CASCADE', // Automatically delete related trainer records when deleted in user table
+          onUpdate: 'CASCADE'  // Automatically update references on user update
         },
         description: {
           type: DataTypes.STRING,

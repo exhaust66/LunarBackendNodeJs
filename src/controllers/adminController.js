@@ -2,12 +2,12 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/admin');
 
-exports.loginAdmin = async (req, res) => {
+const loginAdmin = async (req, res) => {
   const { username, password } = req.body;
   console.log('Request received - Username:', username, 'Password:', password);
 
   try {
-    const admin = await Admin.findOne({ where: { userName: username } });
+    const admin = await Admin.findOne({ where: { name: username } });
 
     if (!admin) {
       return res.status(404).json({ message: 'Admin not found' });
@@ -20,10 +20,12 @@ exports.loginAdmin = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: admin.id, username: admin.userName },
+      { id: admin.id, name: admin.name,email:'admin@gmail.com',role:'Admin' },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
+
+    console.log("Admin Token:",token); //consoling the user token
 
     return res.status(200).json({ token });
   } catch (error) {
@@ -31,3 +33,5 @@ exports.loginAdmin = async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+module.exports = {loginAdmin};

@@ -10,6 +10,8 @@ const Client=sequelize.define('Client',{
             model: User, 
             key: 'id', 
         },
+        onDelete: 'CASCADE', // Automatically delete related client records when deleted in user table
+        onUpdate: 'CASCADE'  // Automatically update references on user update
     },
     subscriptionId: {
         type: DataTypes.INTEGER,

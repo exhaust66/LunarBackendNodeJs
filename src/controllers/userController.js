@@ -1,47 +1,5 @@
 const User=require('../models/user');
-const bcrypt=require('bcryptjs');
 
-const  createUser = async (req, res) => {
-    try {
-      const { name, email, password, role } = req.body; // Extract name and email from the request body
-  
-      if(!name || !email || !password || !role){
-        return res.status(400).json({message:"All fields are required!!"});
-      }
-  
-      //checking if user email already exists
-      const alreadyExists = await User.findOne({where:{email}});
-      if(alreadyExists ){
-        return res.status(400).json({message:'User email already exists!!'})
-      }
-  
-      //hashing password
-      const saltRounds = 10; // Number of salt rounds
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-  
-      //creating new user
-      const newUser = await User.create({
-         name,
-         email,
-         password:hashedPassword,
-         role
-      }); 
-  
-      //if 
-      return res.status(201).json({
-        message:`New user ${name} created successfully`,
-          user:{
-            id:newUser.id,
-            name:newUser.name,
-            email:newUser.email,
-            role:newUser.role
-        }
-      }); 
-    } catch (err) {
-      return res.status(500).json({ message: 'New user is not created'}); // Handle errors
-    }
-  };
-  
 // Controller to fetch all users
 const getUsers = async (req, res) => {
   try {
@@ -59,4 +17,33 @@ const getUsers = async (req, res) => {
   }
 };
 
-  module.exports={createUser,getUsers};
+//UPDATE profile by the Users Themselves
+const updateUserProfile = async (req,res)=>{
+  const{phone,address}=req.body;
+  const userId = req.user.id; //  comes from middleware 
+
+  if(!phone || !address ){
+      return res.status(400).json({ success:false,message:'All fields are required'});
+  }
+  try {
+      const user = await User.findOne({where:{id:userId}});
+      if(!user){
+          console.log('no User available of this id');//for logging
+          return res.status(400).json({success:false,message:'Internal Error'})
+      }
+
+      user.phone = phone;
+      user.address = address;
+      user.save();
+
+      return res.status(200).json({success:true,message:'Data updated Successfully'});
+      
+  } catch (error) {
+      return res.status(400).json({
+          success:false,
+          message:`Some problem: ${error.message}`
+      });
+  }
+}
+
+module.exports={getUsers,updateUserProfile};
