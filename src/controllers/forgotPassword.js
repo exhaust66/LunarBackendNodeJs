@@ -19,7 +19,7 @@ const requestOTP = async (req, res) => {
         const hashedOtp = await bcrypt.hash(otp, 10);
 
         // Set OTP expiry (10 minutes from now)
-        const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
         // Store OTP in the Otp table
         await Otp.create({
