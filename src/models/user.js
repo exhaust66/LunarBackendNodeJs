@@ -1,5 +1,6 @@
 const sequelize=require('../configs/sequelize');
 const {DataTypes}=require('sequelize');
+const {Student} = require('./student');
 
 const User=sequelize.define('User',{
     name: {
@@ -39,5 +40,9 @@ const User=sequelize.define('User',{
 },{
   tableName:'users'
 });
+Users.hasOne(Student,{
+  foreignKey:'user_id',
+  as:'student'
+})
 
 module.exports=User;
