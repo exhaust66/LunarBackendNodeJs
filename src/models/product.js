@@ -56,5 +56,5 @@ Product.hasMany(File, {
 File.belongsTo(Product, {
     foreignKey: 'productId',
     as: 'product',
-})
+});
 module.exports = { Product, File };
