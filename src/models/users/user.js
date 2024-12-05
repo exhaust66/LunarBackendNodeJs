@@ -1,4 +1,4 @@
-const sequelize=require('../configs/sequelize');
+const sequelize=require('../../configs/sequelize');
 const {DataTypes}=require('sequelize');
 const {Student} = require('./student');
 

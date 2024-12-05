@@ -1,17 +1,21 @@
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
 const Otp = require('../models/otp');
-const User = require('../models/user');
+const User = require('../models/users/user');
 
 // Request OTP
-const requestOTP = async (req, res) => {
+const requestOTP = async (req, res,next) => {
     const { email } = req.body;
+
+    if(!email){
+        return res.status(400).json({success:false,message:'Missing Required Fields!'});
+    }
 
     try {
         // Check if student exists
         const user = await User.findOne({ where: { email } });
         if (!user) {
-            return res.status(404).json({ message: 'User not found!' });
+            return res.status(404).json({success:false, message: 'Not a User. Signup to Lunar IT Solution!' });
         }
 
         // Generate OTP and hash it
@@ -22,11 +26,16 @@ const requestOTP = async (req, res) => {
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
         // Store OTP in the Otp table
-        await Otp.create({
+        const savedOtp= await Otp.create({
             userId: user.id,
             resetOtp: hashedOtp,
             otpExpiry: expiresAt,
         });
+
+        if(!savedOtp){
+            console.log("Otp could not entered in 'otps' table!!"); // for debugging
+            res.status(200).json({success:false, message: 'Internal error' });
+        }
 
         // Send OTP via email
         const transporter = nodemailer.createTransport({
@@ -38,18 +47,20 @@ const requestOTP = async (req, res) => {
         });
 
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            //"Lunar IT Solution": This is the sender's display name.
+            //<${process.env.EMAIL_USER}>: This specifies the email address.
+            from: `"Lunar IT Solution" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: 'Your Password Reset OTP',
             text: `Your OTP for password reset is: ${otp}. This OTP is valid for 10 minutes.`,
         };
 
         await transporter.sendMail(mailOptions);
-
-        res.status(200).json({ message: 'OTP sent to email.' });
+        
+        res.status(200).json({success:true, message: 'OTP Sent to Mail!!' });
+        
     } catch (error) {
-        console.error('Error sending OTP:', error);
-        res.status(500).json({ message: 'Internal server error.' });
+        res.status(500).json({success:false, message: 'Internal server error.' });
     }
 };
 
@@ -57,29 +68,33 @@ const requestOTP = async (req, res) => {
 const resetPasswordWithOTP = async (req, res) => {
     const { email, otp, newPassword } = req.body;
 
+    if(!email || !otp || !newPassword){
+        return res.status(400).json({success:false,message:'Missing Required Fields!'});
+    }
+
     try {
         // Check if student exists
         const user = await User.findOne({ where: { email } });
         if (!user) {
-            return res.status(404).json({ message: 'User not found!' });
+            return res.status(404).json({success:false, message: 'Invalid Email !' });
         }
 
         // Fetch OTP record from Otp table
         const otpRecord = await Otp.findOne({ where: { userId: user.id } });
         if (!otpRecord) {
-            return res.status(400).json({ message: 'Invalid OTP. Please request a new one.' });
+            return res.status(400).json({success:false, message: 'Invalid OTP. Please put correct otp.' });
         }
         
-        //delete otp from otps table if expired otp is requested
+        //delete otp from otps table ONLY if expired otp is requested
         if (otpRecord.otpExpiry < Date.now()) {
             await Otp.destroy({ where: { userId: user.id } });
-            return res.status(400).json({ message: 'OTP has expired. Please request a new one.' });
+            return res.status(400).json({success:false, message: 'OTP has expired. Please request a new otp.' });
         }
         
         // Verify OTP
         const isOtpValid = await bcrypt.compare(otp, otpRecord.resetOtp);
         if (!isOtpValid) {
-            return res.status(400).json({ message: 'Invalid OTP.' });
+            return res.status(400).json({success:false, message: 'Invalid OTP.' });
         }
 
         // Hash and update the password
@@ -90,10 +105,10 @@ const resetPasswordWithOTP = async (req, res) => {
         // Delete OTP record after successful use
         await Otp.destroy({ where: { userId: user.id } });
 
-        res.status(200).json({ message: 'Password reset successful.' });
+        res.status(200).json({success:true, message: 'Password reset successful.' });
     } catch (error) {
         console.error('Error resetting password:', error);
-        res.status(500).json({ message: 'Internal server error.' });
+        res.status(500).json({success:false, message: 'Internal server error.' });
     }
 };
 

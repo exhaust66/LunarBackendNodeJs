@@ -1,5 +1,5 @@
-const User=require('../models/user');
-const Student= require('../models/student');
+const User=require('../../models/users/user');
+const Student= require('../../models/users/student');
 
 //middleware for ADMIN to create student id
 const checkStudentAuthenticity = async(req,res,next) =>{
@@ -23,6 +23,7 @@ const checkStudentAuthenticity = async(req,res,next) =>{
         next(error); // Pass errors to error handling middleware
     }
 }
+
 //ADMIN accepts the trainer request by verifying and creating new trainer
 const createStudent = async (req,res)=>{
     try {

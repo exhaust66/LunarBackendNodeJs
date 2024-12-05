@@ -1,15 +1,14 @@
 const express = require('express');
-const upload = require('../configs/multer');
+const upload = require('../../configs/multer');
 // middlewares
-const auth = require('../middleware/decryptToken');
-const {isAdmin} = require('../middleware/checkRole');
+const auth = require('../../middleware/decryptToken');
+const {isAdmin} = require('../../middleware/checkRole');
 
-const {loginAdmin} = require('../controllers/adminController'); 
-const {uploadSingleFile,uploadMultipleFile}=require('../controllers/productUpload');
-const { checkTrainerAuthenticity,createTrainer,assignTraining } = require('../controllers/trainerController');
-const { checkStudentAuthenticity, createStudent } = require('../controllers/studentController');
-const {getUsers}=require('../controllers/userController');
-
+const {loginAdmin} = require('../../controllers/users/adminController'); 
+const {uploadSingleFile,uploadMultipleFile}=require('../../controllers/productUpload');
+const { checkTrainerAuthenticity,createTrainer,assignTraining } = require('../../controllers/users/trainerController');
+const { checkStudentAuthenticity, createStudent } = require('../../controllers/users/studentController');
+const {getUsers}=require('../../controllers/users/userController');
 
 
 const app=express();
