@@ -24,6 +24,10 @@ const Product = sequelize.define('Product', {
         allowNull: true,
         defaultValue:'null'
     },
+    productImage:{
+        type:DataTypes.JSON,
+        allowNull:false
+    },
 });
 
 const File = sequelize.define('File', {

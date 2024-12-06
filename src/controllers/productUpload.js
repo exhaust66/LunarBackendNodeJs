@@ -10,6 +10,7 @@ const handleFileUpload = (uploadType) => {
                 }
 
                 const { productname, productdesc, price, category } = req.body;
+                const productImage=req.file?.filename;
 
                 if (!productname || !productdesc || !price || !category) {
                     return next(new Error('Missing Required Fields'));
@@ -20,7 +21,8 @@ const handleFileUpload = (uploadType) => {
                     productName: productname, // Ensure the column names match
                     productDesc: productdesc,
                     price,
-                    category
+                    category,
+                    productImage
                 });
 
                 // Create the associated file record
@@ -45,6 +47,7 @@ const handleFileUpload = (uploadType) => {
                 }
 
                 const { productname, productdesc, price, category } = req.body;
+                const productImages=req.files?.map(file => file.filename);
 
                 if (!productname || !productdesc || !price || !category) {
                     return next(new Error('Missing Required Fields'));
@@ -55,7 +58,8 @@ const handleFileUpload = (uploadType) => {
                     productName: productname, // Ensure the column names match
                     productDesc: productdesc,
                     price,
-                    category
+                    category,
+                    productImage:productImages
                 });
 
                 // Handle multiple file uploads

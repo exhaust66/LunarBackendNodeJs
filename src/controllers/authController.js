@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const upload = require('../configs/multer');
 const jwt = require('jsonwebtoken');
 const User = require('../models/users/user');
 
@@ -33,7 +34,7 @@ const registerUser = async (req, res) => {
            name,
            email,
            password:hashedPassword,
-           role
+           role,
         }); 
     
         return res.status(201).json({

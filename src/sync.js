@@ -8,5 +8,6 @@ sequelize.sync({ alter: true })  // Use alter: true to adjust tables without res
     await seedAdmin();
   })
   .catch((error) => {
+    console.log(error);
     console.error('Error syncing the database!!');
   });

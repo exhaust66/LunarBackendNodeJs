@@ -1,4 +1,5 @@
 const express=require('express');
+const upload = require('../configs/multer');
 const router=express.Router();
 
 
@@ -7,7 +8,7 @@ const { requestOTP, resetPasswordWithOTP } = require('../controllers/forgotPassw
 
 
 //auth users
-router.post('/register', registerUser);
+router.post('/register',registerUser);
 router.post('/login', loginUser);
 
 //request otps---------------

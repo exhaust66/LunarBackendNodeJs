@@ -19,7 +19,9 @@ const getUsers = async (req, res) => {
 
 //UPDATE profile by the Users Themselves
 const updateUserProfile = async (req,res)=>{
-  const{phone,address , profileImage}=req.body;
+  const{phone,address }=req.body;
+  const profileImage=req.file?.filename;
+
   const userId = req.user.id; //  comes from middleware 
 
   if(!phone || !address || !profileImage ){
@@ -31,12 +33,10 @@ const updateUserProfile = async (req,res)=>{
           console.log('no User available of this id');//for logging
           return res.status(400).json({success:false,message:'Internal Error'})
       }
-
-      //handle photo upload using multer 
-
       
       user.phone = phone;
       user.address = address;
+      user.profileImage=profileImage;
       //save the name of picture here
       user.save();
 

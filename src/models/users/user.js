@@ -2,7 +2,7 @@ const sequelize = require('../../configs/sequelize');
 const { DataTypes } = require('sequelize');
 
 const User = sequelize.define('User', {
-  userId: {
+  id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
@@ -45,40 +45,40 @@ const User = sequelize.define('User', {
   tableName: 'users'
 });
 
-const File = sequelize.define('File', {
-  userId: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: User,
-      key: 'userId',
-    },
-    allowNull: false,
-  },
+// const File = sequelize.define('File', {
+//   userId: {
+//     type: DataTypes.INTEGER,
+//     references: {
+//       model: User,
+//       key: 'userId',
+//     },
+//     allowNull: false,
+//   },
   
-  fileName: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  filePath: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  fileSize: {
-    type: DataTypes.FLOAT,
-    allowNull: true
-  },
-},{
-    tableName:'files'
-});
+//   fileName: {
+//     type: DataTypes.STRING,
+//     allowNull: true
+//   },
+//   filePath: {
+//     type: DataTypes.STRING,
+//     allowNull: true
+//   },
+//   fileSize: {
+//     type: DataTypes.FLOAT,
+//     allowNull: true
+//   },
+// },{
+//     tableName:'files'
+// });
 
-User.hasMany(File, {
-  foreignKey: 'userId',
-  as: 'files',
-});
+// User.hasMany(File, {
+//   foreignKey: 'userId',
+//   as: 'files',
+// });
 
-File.belongsTo(User, {
-  foreignKey: 'userId',
-  as: 'user',
-});
+// File.belongsTo(User, {
+//   foreignKey: 'userId',
+//   as: 'user',
+// });
 
-module.exports = {User,File};
+module.exports = User;
