@@ -30,6 +30,7 @@ const User=sequelize.define('User',{
       },
       profileImage: {
         type: DataTypes.STRING,
+        defaultValue:'fileName',
         allowNull: true,
       },
       verification:{

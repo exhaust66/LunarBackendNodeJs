@@ -24,7 +24,7 @@ const checkStudentAuthenticity = async(req,res,next) =>{
     }
 }
 
-//ADMIN accepts the trainer request by verifying and creating new trainer
+//ADMIN accepts the student request by verifying and creating new student
 const createStudent = async (req,res)=>{
     try {
         const userId = req.userId; // comes from middleware --checkStudentAuthenticity
