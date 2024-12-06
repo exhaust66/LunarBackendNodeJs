@@ -15,19 +15,19 @@ const Client=sequelize.define('Client',{
     },
     subscriptionId: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
     },
     startDate: {
         type: DataTypes.DATE,
-        allowNull: true,
+        allowNull: false,
     },
     endDate: {
         type: DataTypes.DATE,
-        allowNull: true,
+        allowNull: false,
     },
     renewalStatus: {
         type: DataTypes.ENUM('Pending', 'Renewed', 'Expired'),
-        allowNull: true,
+        allowNull: false,
     },
 });
 

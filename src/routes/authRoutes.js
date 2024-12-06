@@ -7,7 +7,7 @@ const { requestOTP, resetPasswordWithOTP } = require('../controllers/forgotPassw
 
 
 //auth users
-router.post('/register', registerUser);
+router.post('/register',registerUser);
 router.post('/login', loginUser);
 
 //request otps---------------
