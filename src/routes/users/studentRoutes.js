@@ -4,7 +4,9 @@ const {recordAttendance,getAttendanceByEnrollment}=require('../../controllers/at
 //middlewares
 const auth = require('../../middleware/decryptToken');
 const {isStudent} = require('../../middleware/checkRole');
-router.post('attendance/postAttendance',recordAttendance);
-router.get('attendance/getAttendanceById/:enrollmentId',getAttendanceByEnrollment);
+// router.post('attendance/postAttendance',recordAttendance);
+// router.get('attendance/getAttendanceById/:enrollmentId',getAttendanceByEnrollment);
+
+
 
 module.exports = router;

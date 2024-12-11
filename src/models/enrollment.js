@@ -1,10 +1,31 @@
 const {DataTypes}=require('sequelize');
 const sequelize=require('../configs/sequelize');
+const Student=require('../models/users/student');
+const Program=require('../models/program');
 
 const Enrollment=sequelize.define('Enrollment',{
-    enrollmentId:{
-        type:DataTypes.INTEGER,
-        primaryKey:true
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+    studentId:{
+        type: DataTypes.INTEGER,
+        references: {
+             model: Student,
+             key: 'id'
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE' 
+    },
+    programId:{
+        type: DataTypes.INTEGER,
+        references: {
+             model: Program,
+             key: 'id'
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE' 
     },
     status: {
         type: DataTypes.ENUM("Active", "Completed", "Dropped"),
@@ -25,13 +46,4 @@ const Enrollment=sequelize.define('Enrollment',{
     },
 });
 
-Enrollment.associate = (models) => {
-    Enrollment.belongsTo(models.Student, {
-        foreignKey: "studentId",
-        as: "student",
-    });
-    Enrollment.belongsTo(models.Program, {
-        foreignKey: "programId",
-        as: "program",
-    });
-};
+module.exports=Enrollment;
