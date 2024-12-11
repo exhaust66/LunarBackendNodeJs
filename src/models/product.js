@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../configs/sequelize');
 
 const Product = sequelize.define('Product', {
-    productId: {
+    id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
@@ -28,6 +28,11 @@ const Product = sequelize.define('Product', {
         type:DataTypes.JSON,
         allowNull:false
     },
+    available:{
+        type:DataTypes.BOOLEAN,
+        defaultValue:true,
+        allowNull:false
+    }
 });
 
 const File = sequelize.define('File', {

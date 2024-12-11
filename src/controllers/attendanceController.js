@@ -1,7 +1,7 @@
 const Attendance = require('../models/attendance');
 const Enrollment = require('../models/enrollment');
-const Student = require('../models/student');
-const User = require('../models/user');
+const Student = require('../models/users/student');
+const User = require('../models/users/user');
 
 //function to get enrollments by ProgramId
 const getEnrollmentsByProgramId = async (programId) => {
