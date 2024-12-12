@@ -24,7 +24,7 @@ router.post('/multipleUpload',upload.array('files',5),uploadMultipleFile);
 //HANDLING OTHER USERS ----------------------------------------------------------
 //for Trainer
 router.post('/createTrainer',[auth,isAdmin],checkTrainerAuthenticity,createTrainer)
-router.post('/assignProgram',[auth,isAdmin],checkTrainerAuthenticity,assignProgram);
+router.post('/assignProgram',[auth,isAdmin],assignProgram);
 //For Student
 router.post('/createStudent',[auth,isAdmin],checkStudentAuthenticity,createStudent)
 

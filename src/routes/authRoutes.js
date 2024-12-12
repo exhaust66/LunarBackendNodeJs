@@ -16,4 +16,5 @@ router.post('/forgot-password/request-otp', requestOTP);
 // Route for resetting password using OTP
 router.post('/forgot-password/reset', resetPasswordWithOTP);
 
+
 module.exports = router;

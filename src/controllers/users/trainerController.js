@@ -1,3 +1,4 @@
+const Program = require('../../models/program');
 const Trainer =require('../../models/users/trainer');
 const User = require('../../models/users/user');
 
@@ -62,7 +63,6 @@ const assignProgram = async (req,res)=>{
     const {programId,trainerId } = req.body;
     // const userId = req.userId; // userId comes from middleware  --checkTrainerAuthenticity--
 
-    console.log(trainerId);
     if(!trainerId || !programId ){
         return res.status(400).json({success:false,message:'Missing required Fields !'});
     }
@@ -76,14 +76,18 @@ const assignProgram = async (req,res)=>{
         }
 
         //parsing the avaliable assignedTraining JSON
-        let availableTrainingIds = JSON.parse(trainer.assignedTraining || []); 
+        const isProgram = await Program.findOne({where:{id:programId}});
+        if(!isProgram){
+            return res.status(400).json({success:false,message:"Program not available"})
+        }
+        let availableProgramIds = JSON.parse(trainer.assignedTraining || []); 
 
-        if(availableTrainingIds.includes(trainingId)){ 
+        if(availableProgramIds.includes(Number.parseInt(programId))){ 
             return res.status(400).json({success:false,message:'This training is already assigned'});
         }
-
-        availableTrainingIds.push(trainingId);
-        trainer.assignedTraining = availableTrainingIds;
+        
+        availableProgramIds.push(Number.parseInt(programId));
+        trainer.assignedTraining = availableProgramIds;
         await trainer.save(); //save the changes to the database
 
         return res.status(200).json({

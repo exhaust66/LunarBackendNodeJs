@@ -96,3 +96,4 @@ const handleFileUpload = (uploadType) => {
 
 exports.uploadSingleFile = handleFileUpload('single');
 exports.uploadMultipleFile = handleFileUpload('multiple');
+

@@ -41,7 +41,7 @@ const loginAdmin = async (req, res) => {
   }
 };
 
-//hadling get request for applications
+//handling get request for applications
 const fetchApplications = async (req, res) => {
   try {
     const applications = await Applications.findAll();
@@ -135,9 +135,9 @@ const fetchAllStudents = async (req, res) => {
   try {
     const students = await Student.findAll({
       include:[{
-        model: User, // Pass the actual User model here, not a string
-        as: 'user', // Ensure this matches the alias defined in the association
-        attributes: ['name', 'email', 'phone', 'address'], // Select specific attributes from the User model
+        model: User, 
+        as: 'user', 
+        attributes: ['name', 'email', 'phone', 'address'], 
     },],
     });
 
@@ -182,5 +182,5 @@ const fetchStudentByName=async (req,res)=>{
   }
 };
 
-module.exports = { loginAdmin,fetchApplications,handleApplicationStatus,
-                  fetchAllStudents ,fetchStudentByName};
+module.exports = { loginAdmin,fetchApplications,handleApplicationStatus,fetchAllStudents ,
+                    fetchStudentByName};
