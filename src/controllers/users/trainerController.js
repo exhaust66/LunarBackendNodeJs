@@ -75,24 +75,29 @@ const assignProgram = async (req,res)=>{
             return res.status(400).json({success:false,message:'User is not a trainer'});
         }
 
-        //parsing the avaliable assignedTraining JSON
+        //parsing the avaliable assignedProgram JSON
         const isProgram = await Program.findOne({where:{id:programId}});
         if(!isProgram){
             return res.status(400).json({success:false,message:"Program not available"})
         }
-        let availableProgramIds = JSON.parse(trainer.assignedTraining || []); 
+
+        let availableProgramIds = JSON.parse(trainer.assignedProgram || []); 
 
         if(availableProgramIds.includes(Number.parseInt(programId))){ 
-            return res.status(400).json({success:false,message:'This training is already assigned'});
+            return res.status(400).json({success:false,message:'This Program is already assigned'});
         }
         
         availableProgramIds.push(Number.parseInt(programId));
-        trainer.assignedTraining = availableProgramIds;
-        await trainer.save(); //save the changes to the database
+        trainer.assignedProgram = availableProgramIds;
+        
+        const updatedData = await trainer.save(); //save the changes to the database
+
+        const {id,userId,assignedProgram,experience,description} = updatedData;
 
         return res.status(200).json({
             success:true,
             message: 'Training assigned successfully.',
+            data:{id,userId,assignedProgram,experience,description}
         })
     } catch (error) {
         return res.status(400).json({

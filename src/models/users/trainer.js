@@ -21,10 +21,17 @@ const Trainer=sequelize.define('Trainer',{
             type: DataTypes.INTEGER,
             allowNull: true,
         },
-        assignedTraining: {
+        assignedProgram: {
             type: DataTypes.JSON, // Use JSON to store array of phone objects
             defaultValue:[], // empty JSON that matches MYsql type
         },
+},{
+  tableName:'trainers'
 });
+
+Trainer.belongsTo(User, {
+     foreignKey: 'userId',
+     as: 'user',
+   });
 
 module.exports = Trainer;

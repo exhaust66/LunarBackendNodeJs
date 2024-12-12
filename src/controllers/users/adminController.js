@@ -7,6 +7,7 @@ const Student = require('../../models/users/student');
 const User = require('../../models/users/user');
 const Enrollment = require('../../models/enrollment');
 const Applications = require('../../models/applications');
+const Trainer = require('../../models/users/trainer');
 
 
 const loginAdmin = async (req, res) => {
@@ -156,7 +157,6 @@ const fetchAllStudents = async (req, res) => {
   }
 };
 
-
 //GET method to fetch student by name
 const fetchStudentByName=async (req,res)=>{
   
@@ -182,5 +182,56 @@ const fetchStudentByName=async (req,res)=>{
   }
 };
 
+//GET method to fetch all trainers
+const fetchAllTrainers = async (req,res) =>{
+  try {
+      const trainers = await Trainer.findAll({
+          attributes: ['id', 'userId', 'description', 'experience', 'assignedProgram'], // Only these fields from Trainer
+          include:[
+              {
+                  model: User, 
+                  as: 'user', 
+                  attributes: ['name', 'email', 'phone', 'address'], 
+              }
+          ],
+      });
+
+      if(!trainers || trainers.length === 0){
+          return res.status(404).json({success:false,message:"No Trainer Found"})
+      }
+      
+      return res.status(200).json({success:true,data:trainers});
+
+  } catch (error) {
+      return res.status(404).json({success:false,message:"Cannot fetch the data"})
+  }
+}
+
+//GET method to fetch student by name
+const fetchTrainerByName=async (req,res)=>{
+  
+  try{
+    const {name}=req.body;
+     if(!name){
+      return res.status(400).json({success:false,message:'Missing required field!'});
+     }
+
+    const trainers=await Trainer.findAll({
+      attributes: ['id', 'userId', 'description', 'experience', 'assignedProgram'], // Only these fields from Trainer
+      include:{
+          model:User,
+          as:'user',
+          where: { name: { [Op.like]: `%${name}%` } },
+          attributes:['name','email','phone','address'],
+    }});
+    if(!trainers || trainers.length ===0){
+      return res.status(400).json({success:false,message:'Trainers not found!'});
+    }
+    res.status(200).json({success:true,data:trainers});
+  }catch(err){
+    console.error(err);
+    res.status(500).json({success:false,message:'Internal Server Error!'});
+  }
+};
 module.exports = { loginAdmin,fetchApplications,handleApplicationStatus,fetchAllStudents ,
-                    fetchStudentByName};
+                    fetchStudentByName ,fetchAllTrainers,fetchTrainerByName};
