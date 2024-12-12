@@ -1,10 +1,13 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Sequelize = require('../../configs/sequelize');
+const {Op}=require('sequelize');
 const Admin = require('../../models/users/admin');
 const Student = require('../../models/users/student');
 const User = require('../../models/users/user');
 const Enrollment = require('../../models/enrollment');
 const Applications = require('../../models/applications');
+
 
 const loginAdmin = async (req, res) => {
   const { username, password } = req.body;
@@ -82,7 +85,7 @@ const handleApplicationStatus = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error!' });
   }
 };
-
+//function to create student--is called when application is accepted
 async function createStudent(userId) {
   try {
     const user = await User.findByPk(userId);
@@ -102,7 +105,7 @@ async function createStudent(userId) {
     throw new Error('Internal Server Error!');
   }
 };
-
+//function to create enrollment--is called when application is accepted
 async function createEnrollment(studentId, programId) {
   try {
     const student = await Student.findByPk(studentId);
@@ -127,4 +130,57 @@ async function createEnrollment(studentId, programId) {
   }
 };
 
-module.exports = { loginAdmin,fetchApplications,handleApplicationStatus };
+//GET method to fetch all students
+const fetchAllStudents = async (req, res) => {
+  try {
+    const students = await Student.findAll({
+      include:[{
+        model: User, // Pass the actual User model here, not a string
+        as: 'user', // Ensure this matches the alias defined in the association
+        attributes: ['name', 'email', 'phone', 'address'], // Select specific attributes from the User model
+    },],
+    });
+
+    if (!students || students.length === 0) {
+      return res.status(404).json({ success: false, message: 'No students found!' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Fetched all students.',
+      data: students,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Internal Server Error!' });
+  }
+};
+
+
+//GET method to fetch student by name
+const fetchStudentByName=async (req,res)=>{
+  
+  try{
+  const {name}=req.body;
+     if(!name){
+      return res.status(400).json({success:false,message:'Missing required field!'});
+     }
+    const students=await Student.findAll({
+      include:{
+          model:User,
+          as:'user',
+          where: { name: { [Op.like]: `%${name}%` } },
+          attributes:['name','email','phone','address'],
+    }});
+    if(!students){
+      return res.status(400).json({success:false,message:'Student not found!'});
+    }
+    res.status(200).json({success:true,data:students});
+  }catch(err){
+    console.error(err);
+    res.status(500).json({success:false,message:'Internal Server Error!'});
+  }
+};
+
+module.exports = { loginAdmin,fetchApplications,handleApplicationStatus,
+                  fetchAllStudents ,fetchStudentByName};

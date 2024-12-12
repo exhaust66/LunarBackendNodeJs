@@ -58,18 +58,18 @@ const createTrainer = async (req,res)=>{
 }
 
 //ADMIN assigns the training to the trainer
-const assignTraining = async (req,res)=>{
-    const {trainingId } = req.body;
-    const userId = req.userId; // userId comes from middleware  --checkTrainerAuthenticity--
+const assignProgram = async (req,res)=>{
+    const {programId,trainerId } = req.body;
+    // const userId = req.userId; // userId comes from middleware  --checkTrainerAuthenticity--
 
-    console.log(userId);
-    if(!userId || !trainingId ){
+    console.log(trainerId);
+    if(!trainerId || !programId ){
         return res.status(400).json({success:false,message:'Missing required Fields !'});
     }
 
     try {
         //check if trainer exists
-        const trainer = await Trainer.findOne({where:{userId}});
+        const trainer = await Trainer.findOne({where:{id:trainerId}});
 
         if(!trainer){
             return res.status(400).json({success:false,message:'User is not a trainer'});
@@ -130,6 +130,6 @@ const updateTrainerProfile = async (req,res)=>{
 module.exports = {
     checkTrainerAuthenticity,
     createTrainer,
-    assignTraining,
+    assignProgram,
     updateTrainerProfile
 }

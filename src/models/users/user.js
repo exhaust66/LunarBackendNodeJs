@@ -1,6 +1,7 @@
 const sequelize = require('../../configs/sequelize');
 const { DataTypes } = require('sequelize');
 
+
 const User = sequelize.define('User', {
   id: {
     type: DataTypes.INTEGER,
@@ -45,6 +46,13 @@ const User = sequelize.define('User', {
   tableName: 'users'
 });
 
+// Define associations
+User.associate = (models) => {
+  User.hasOne(models.Student, {
+    foreignKey: 'userId',
+    as: 'student',
+  });
+};
 // const File = sequelize.define('File', {
 //   userId: {
 //     type: DataTypes.INTEGER,
@@ -80,5 +88,10 @@ const User = sequelize.define('User', {
 //   foreignKey: 'userId',
 //   as: 'user',
 // });
-
+// User.associate = (models) => {
+//   User.hasOne(models.Student, {
+//     foreignKey: 'userId',
+//     as: 'student',
+//   });
+// };
 module.exports = User;
