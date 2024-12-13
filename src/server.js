@@ -3,7 +3,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes=require('./routes/users/userRoutes');
 const studentRoutes=require('./routes/users/studentRoutes');
 const adminRoutes=require('./routes/users/adminRoutes');
-
+const trainerRoutes=require('./routes/users/trainerRoutes');
 //neccessary imports
 require('dotenv').config();
 require('./sync');
@@ -15,7 +15,8 @@ app.use(express.json());
 app.use('/api/auth',authRoutes)
 app.use('/api/users',userRoutes);
 app.use('/api/students', studentRoutes);
-app.use('/api/admin',adminRoutes)
+app.use('/api/admin',adminRoutes);
+app.use('/api/trainer',trainerRoutes);
 
 
 // Global error handler

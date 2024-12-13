@@ -46,4 +46,8 @@ const Enrollment=sequelize.define('Enrollment',{
     },
 });
 
+Enrollment.belongsTo(Student,{
+    foreignKey:'studentId',
+    as:'student'
+});
 module.exports=Enrollment;

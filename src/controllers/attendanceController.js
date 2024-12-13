@@ -11,10 +11,12 @@ const getEnrollmentsByProgramId = async (programId) => {
             include: [
                 {
                     model: Student,
+                    as:'student',
                     attributes: ['id'],
                     include: [
                         {
                             model: User,
+                            as:'user',
                             attributes: ['name'],
                         },
                     ],
@@ -31,7 +33,7 @@ const getEnrollmentsByProgramId = async (programId) => {
 };
 
 //get handler that is used to fetch enrollments of particual program with its programId
-const fetchEnrollmentsOfProgram = async (req, res) => {
+const fetchEnrollmentsByProgramId = async (req, res) => {
     const { programId } = req.body;
 
     if (!programId) {
@@ -57,12 +59,12 @@ const fetchEnrollmentsOfProgram = async (req, res) => {
 const postAttendance = async (req, res) => {
     try {
         const { programId, attendanceRecords } = req.body;
-
+        console.log(programId,attendanceRecords);
         if (!programId || !attendanceRecords || !Array.isArray(attendanceRecords)) {
             return res.status(400).json({ status: 'Failed', message: 'Missing or Invalid Fields!' });
         }
 
-        const enrollments = await getEnrollmentsByProgramId(programId);
+        const enrollments = await Enrollment.findAll({where:{programId}});
 
         if (!enrollments || enrollments.length === 0) {
             return res.status(404).json({ status: 'Failed', message: 'No enrollments found for the given Program!' });
@@ -124,4 +126,4 @@ const getAttendance = async (req, res) => {
 
 
 
-module.exports = { fetchEnrollmentsOfProgram,postAttendance,getAttendance};
+module.exports = { fetchEnrollmentsByProgramId,postAttendance,getAttendance};

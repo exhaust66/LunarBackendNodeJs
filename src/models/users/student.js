@@ -25,4 +25,11 @@ Student.belongsTo(User, {
      as: 'user',
    });
 
+Student.associate=(models)=>{
+     Student.hasMany(models.Enrollment,{
+          foreignKey:'studentId',
+          as:'student'
+     });
+};
+
 module.exports = Student;

@@ -26,10 +26,6 @@ const Attendance = sequelize.define("Attendance", {
         type: DataTypes.ENUM("Present", "Absent", "Late", "Leave"),
         allowNull: false,
     },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    }
 });
 
 // Define associations
