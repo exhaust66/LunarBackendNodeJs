@@ -1,12 +1,14 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Sequelize = require('../../configs/sequelize');
-const {Op}=require('sequelize');
+const { Op } = require('sequelize');
 const Admin = require('../../models/users/admin');
 const Student = require('../../models/users/student');
 const User = require('../../models/users/user');
 const Enrollment = require('../../models/enrollment');
 const Applications = require('../../models/applications');
+const Trainer = require('../../models/users/trainer');
+const { schedule } = require('node-schedule');
 
 
 const loginAdmin = async (req, res) => {
@@ -57,9 +59,9 @@ const fetchApplications = async (req, res) => {
 };
 
 //handling status change and creating student and enrollment if accepted
-const handleApplicationStatus = async (req, res) => {
+const acceptApplication = async (req, res) => {
   try {
-    const { applicationId, userId,status } = req.body;
+    const { applicationId, userId, status } = req.body;
 
     if (!applicationId || !status) {
       return res.status(400).json({ success: false, message: 'Missing Required Fields!' });
@@ -67,19 +69,29 @@ const handleApplicationStatus = async (req, res) => {
     const application = await Applications.findByPk(applicationId);
 
     if (!application) {
-      res.status(400).json({ success: false, message: 'Application not found!' });
+      return res.status(400).json({ success: false, message: 'Application not found!' });
     }
-    application.status = status;
-    await application.save();
-
+    //create student and enrollment when application is accepted
     if (status === 'Accepted') {
       const student = await createStudent(userId);
-      const enrollment = await createEnrollment(student.id,application.programId);
-
-      res.status(200).json({ status: 'Success', data: { student, enrollment } });
+      const enrollment = await createEnrollment(student.id, application.programId);
+      if (!enrollment || !student) {
+        return res.status(500).json({ success: false, message: ' Failed to create student or enrollment!' });
+      }
+      application.status='Accepted';//the accepted application will remain for 24hrs
+      application.save();
+      //delete the application after 24hrs of being accepted
+      const deletionTime = new Date(Date.now()+ 24 * 60 * 60 * 1000);
+      schedule.scheduleJob(deletionTime, async()=>{
+          try{
+            await application.destroy();
+            console.log(`Application with id ${applicationId} deleted!`);
+          }catch(err){
+            console.error('Error destroying Application!',err);
+          }
+      });
+      res.status(200).json({ success: true, data: { student, enrollment } });
     }
-
-
   } catch (err) {
     console.log(err);
     res.status(500).json({ success: false, message: 'Internal Server Error!' });
@@ -98,6 +110,8 @@ async function createStudent(userId) {
       userId: userId,
       certificates: null,
     });
+    user.verification = 'Verified';
+    await user.save();
 
     return student;  // Return student data instead of using res
   } catch (err) {
@@ -134,11 +148,11 @@ async function createEnrollment(studentId, programId) {
 const fetchAllStudents = async (req, res) => {
   try {
     const students = await Student.findAll({
-      include:[{
-        model: User, 
-        as: 'user', 
-        attributes: ['name', 'email', 'phone', 'address'], 
-    },],
+      include: [{
+        model: User,
+        as: 'user',
+        attributes: ['name', 'email', 'phone', 'address'],
+      },],
     });
 
     if (!students || students.length === 0) {
@@ -156,31 +170,85 @@ const fetchAllStudents = async (req, res) => {
   }
 };
 
-
 //GET method to fetch student by name
-const fetchStudentByName=async (req,res)=>{
-  
-  try{
-  const {name}=req.body;
-     if(!name){
-      return res.status(400).json({success:false,message:'Missing required field!'});
-     }
-    const students=await Student.findAll({
-      include:{
-          model:User,
-          as:'user',
-          where: { name: { [Op.like]: `%${name}%` } },
-          attributes:['name','email','phone','address'],
-    }});
-    if(!students){
-      return res.status(400).json({success:false,message:'Student not found!'});
+const fetchStudentByName = async (req, res) => {
+
+  try {
+    const { name } = req.body;
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Missing required field!' });
     }
-    res.status(200).json({success:true,data:students});
-  }catch(err){
+    const students = await Student.findAll({
+      include: {
+        model: User,
+        as: 'user',
+        where: { name: { [Op.like]: `%${name}%` } },
+        attributes: ['name', 'email', 'phone', 'address'],
+      }
+    });
+    if (!students) {
+      return res.status(400).json({ success: false, message: 'Student not found!' });
+    }
+    res.status(200).json({ success: true, data: students });
+  } catch (err) {
     console.error(err);
-    res.status(500).json({success:false,message:'Internal Server Error!'});
+    res.status(500).json({ success: false, message: 'Internal Server Error!' });
   }
 };
 
-module.exports = { loginAdmin,fetchApplications,handleApplicationStatus,fetchAllStudents ,
-                    fetchStudentByName};
+//GET method to fetch all trainers
+const fetchAllTrainers = async (req, res) => {
+  try {
+    const trainers = await Trainer.findAll({
+      attributes: ['id', 'userId', 'description', 'experience', 'assignedProgram'], // Only these fields from Trainer
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['name', 'email', 'phone', 'address'],
+        }
+      ],
+    });
+
+    if (!trainers || trainers.length === 0) {
+      return res.status(404).json({ success: false, message: "No Trainer Found" })
+    }
+
+    return res.status(200).json({ success: true, data: trainers });
+
+  } catch (error) {
+    return res.status(404).json({ success: false, message: "Cannot fetch the data" })
+  }
+}
+
+//GET method to fetch student by name
+const fetchTrainerByName = async (req, res) => {
+
+  try {
+    const { name } = req.body;
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Missing required field!' });
+    }
+
+    const trainers = await Trainer.findAll({
+      attributes: ['id', 'userId', 'description', 'experience', 'assignedProgram'], // Only these fields from Trainer
+      include: {
+        model: User,
+        as: 'user',
+        where: { name: { [Op.like]: `%${name}%` } },
+        attributes: ['name', 'email', 'phone', 'address'],
+      }
+    });
+    if (!trainers || trainers.length === 0) {
+      return res.status(400).json({ success: false, message: 'Trainers not found!' });
+    }
+    res.status(200).json({ success: true, data: trainers });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Internal Server Error!' });
+  }
+};
+module.exports = {
+  loginAdmin, fetchApplications, acceptApplication, fetchAllStudents,
+  fetchStudentByName, fetchAllTrainers, fetchTrainerByName
+};

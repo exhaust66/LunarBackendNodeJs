@@ -4,7 +4,7 @@ const upload = require('../../configs/multer');
 const auth = require('../../middleware/decryptToken');
 const {isAdmin} = require('../../middleware/checkRole');
 
-const {loginAdmin,fetchApplications,handleApplicationStatus,fetchAllStudents ,fetchStudentByName} = require('../../controllers/users/adminController'); 
+const {loginAdmin,fetchApplications,handleApplicationStatus,fetchAllStudents ,fetchStudentByName, fetchTrainerByName, fetchAllTrainers, acceptApplication} = require('../../controllers/users/adminController'); 
 const {uploadSingleFile,uploadMultipleFile}=require('../../controllers/productUpload');
 const { checkTrainerAuthenticity,createTrainer,assignProgram } = require('../../controllers/users/trainerController');
 const { checkStudentAuthenticity, createStudent } = require('../../controllers/users/studentController');
@@ -17,7 +17,7 @@ const router = express.Router();
 
 router.post('/login', loginAdmin); 
 router.post('/fetchApplications', fetchApplications); 
-router.post('/handleApplicationStatus', handleApplicationStatus); 
+router.post('/handleApplicationStatus', acceptApplication); 
 router.post('/singleUpload',upload.single('file'),uploadSingleFile);
 router.post('/multipleUpload',upload.array('files',5),uploadMultipleFile);
 
@@ -36,6 +36,12 @@ router.post('/programs', createProgram);
 //fetch students
 router.get('/fetchAllStudents', fetchAllStudents); 
 router.get('/fetchStudentByName', fetchStudentByName); 
+
+//fetch trainer
+router.get('/fetchAllTrainers',fetchAllTrainers);
+router.get('/fetchTrainerByName',fetchTrainerByName);
+
+
 app.use((err, req, res, next) => {
     console.error(err); 
     res.status(400).json({ error: err.message });
