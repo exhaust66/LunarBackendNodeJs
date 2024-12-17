@@ -6,9 +6,9 @@ const {isTrainer} = require('../../middleware/checkRole');
 const upload = require('../../configs/multer');
 
 //required imports
-const {createApplications,applicationHandler}=require('../../controllers/applicationController');
+const {createApplications}=require('../../controllers/applicationController');
 const {checkTrainerAuthenticity,updateTrainerProfile } = require('../../controllers/users/trainerController');
-const {updateUserProfile} = require('../../controllers/users/userController');
+const {updateUserProfile,sendJobApplication} = require('../../controllers/users/userController');
 
 
 //update the contents from any users related to their profile
@@ -20,5 +20,8 @@ router.post('/updateTrainerProfile',[auth,isTrainer],checkTrainerAuthenticity,up
 //sending application
 //routes for applications
 router.post('/postApplication',createApplications);
+
+//router for job application
+router.post('/sendJobApplication',upload.single('file'),sendJobApplication);
 
 module.exports=router;

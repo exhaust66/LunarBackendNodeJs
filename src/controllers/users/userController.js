@@ -1,3 +1,5 @@
+const Job = require('../../models/job');
+const JobApplication = require('../../models/jobApplication');
 const User=require('../../models/users/user');
 
 // Controller to fetch all users
@@ -48,6 +50,51 @@ const updateUserProfile = async (req,res)=>{
           message:`Some problem: ${error.message}`
       });
   }
+};
+//send job applications
+const sendJobApplication=async (req,res)=>{
+  try{
+      const {jobId,userId,message,contact}=req.body;
+      const resume=req.file?.filename;
+
+      if(!jobId || !userId || !message || !contact ){
+        return res.status(400).json({success:false,message:'Missing Required Fields!'});
+      }
+
+      if(!resume){
+        return res.status(400).json({succes:false,message:'Missing resume!'});
+      }
+
+      const isUser=await User.findByPk(userId);
+      const isJob=await Job.findByPk(jobId);
+      const didUserAlreadyApplied=await JobApplication.findAll({where:{userId:userId,jobId,jobId}});
+
+      if(!isUser){
+        return res.status(400).json({success:false,message:'User not found!'});
+      }
+
+      if(!isJob){
+        return res.status(400).json({success:false,message:'Job not found!'});
+      }
+      if(didUserAlreadyApplied){
+        return res.status(400).json({success:false,message:'You have already applied for the job!'});
+      }
+      const sentApplication=await JobApplication.create({
+        jobId,
+        userId,
+        message,
+        contact,
+        resume,
+      });
+
+      if(!sentApplication){
+        return res.status(400).json({success:false,message:'Failed to send job application!'});
+      }
+      res.status(200).json({succes:true,data:sentApplication,message:'Job Application sent successfully!'});
+  }catch(err){
+    console.error(err);
+    res.status(500).json({success:false,message:'Internal Server Error!'});
+  }
 }
 
-module.exports={getUsers,updateUserProfile};
+module.exports={getUsers,updateUserProfile,sendJobApplication};

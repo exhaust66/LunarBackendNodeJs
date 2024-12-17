@@ -4,12 +4,12 @@ const upload = require('../../configs/multer');
 const auth = require('../../middleware/decryptToken');
 const {isAdmin} = require('../../middleware/checkRole');
 
-const {loginAdmin,fetchApplications,handleApplicationStatus,fetchAllStudents ,fetchStudentByName, fetchTrainerByName, fetchAllTrainers, acceptApplication} = require('../../controllers/users/adminController'); 
+const {loginAdmin,fetchApplications,fetchAllStudents ,fetchStudentByName, fetchTrainerByName, fetchAllTrainers, acceptApplication,postJob} = require('../../controllers/users/adminController'); 
 const {uploadSingleFile,uploadMultipleFile}=require('../../controllers/productUpload');
 const { checkTrainerAuthenticity,createTrainer,assignProgram } = require('../../controllers/users/trainerController');
 const { checkStudentAuthenticity, createStudent } = require('../../controllers/users/studentController');
 const {getUsers}=require('../../controllers/users/userController');
-const { createProgram } = require('../../controllers/programController'); //
+const { createProgram } = require('../../controllers/programController'); 
 
 
 const app=express();
@@ -41,6 +41,8 @@ router.get('/fetchStudentByName', fetchStudentByName);
 router.get('/fetchAllTrainers',fetchAllTrainers);
 router.get('/fetchTrainerByName',fetchTrainerByName);
 
+//job
+router.post('/postJob',postJob);
 
 app.use((err, req, res, next) => {
     console.error(err); 

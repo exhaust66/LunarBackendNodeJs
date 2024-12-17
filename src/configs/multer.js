@@ -18,15 +18,17 @@ const storage=multer.diskStorage({
     }
 });
 const fileFilter=(req,file,cb)=>{
-    if(!file.mimetype.startsWith('image') && !file.mimetype.startsWith('video')){
-        cb(new Error('Invalid File Format! Only Images and Videos allowed'));
+    if(!file.mimetype.startsWith('image')
+         && !file.mimetype.startsWith('video')
+         && !file.mimetype.startsWith('application/pdf')){
+        cb(new Error('Invalid File Format! Only Images, Videos and Pdf allowed'));
     }else{
         cb(null,true);
     }
 };
 const upload=multer({
     storage:storage,
-    limits:{fileSize:50*1024*1024},
+    limits:{fileSize:50*1024*1024},//50 mb
     fileFilter:fileFilter
 });
 

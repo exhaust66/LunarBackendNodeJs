@@ -9,7 +9,7 @@ const Enrollment = require('../../models/enrollment');
 const Applications = require('../../models/applications');
 const Trainer = require('../../models/users/trainer');
 const { schedule } = require('node-schedule');
-
+const Job=require('../../models/job');
 
 const loginAdmin = async (req, res) => {
   const { username, password } = req.body;
@@ -248,7 +248,51 @@ const fetchTrainerByName = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error!' });
   }
 };
+
+//handling posting a job
+const postJob=async (req,res)=>{
+  try{
+      const {title,description,salary,location,jobType,applicationDeadline}=req.body;
+
+      if(!title || !description || !salary || !jobType || !applicationDeadline){
+          return res.status(400).json({success:false,message:'Missing Required Fields!'});
+      }
+
+      const postedJob=await Job.create({
+        title,
+        description,
+        salary,
+        jobType,
+        applicationDeadline,
+        location,
+      });
+
+      if(!postedJob){
+          return res.satus(400).json({success:false,message:'Failed to post job!'});
+      }
+
+      res.status(200).json({success:true,data:postedJob,message:'Job posted successfully!'});
+
+  }catch(err){
+    console.error(err);
+    res.status(500).json({success:false,message:'Internal Server Error!'});
+  }
+};
+//get req to fetch all job applications
+const fetchJobApplications=async (req,res)=>{
+  try{
+      const jobApplications=await jobApplications.findAll();
+
+      if(!jobApplications){
+        return res.status(400).json({success:false,message:'No any applications found!'});
+      }
+      return res.status(200).json({success:true,data:jobApplications});
+  }catch(err){
+    console.err(err);
+    res.status(500).json({success:false,message:'Internal Server Error!'});
+  }
+}
 module.exports = {
   loginAdmin, fetchApplications, acceptApplication, fetchAllStudents,
-  fetchStudentByName, fetchAllTrainers, fetchTrainerByName
+  fetchStudentByName, fetchAllTrainers, fetchTrainerByName,postJob,fetchJobApplications
 };
