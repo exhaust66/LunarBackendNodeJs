@@ -10,6 +10,10 @@ const Applications = require('../../models/applications');
 const Trainer = require('../../models/users/trainer');
 const { schedule } = require('node-schedule');
 const Job=require('../../models/job');
+const JobApplication = require('../../models/jobApplication');
+const { application } = require('express');
+const { Product } = require('../../models/product');
+const Client = require('../../models/users/client');
 
 const loginAdmin = async (req, res) => {
   const { username, password } = req.body;
@@ -281,18 +285,102 @@ const postJob=async (req,res)=>{
 //get req to fetch all job applications
 const fetchJobApplications=async (req,res)=>{
   try{
-      const jobApplications=await jobApplications.findAll();
+      const jobApplications=await JobApplication.findAll();
 
       if(!jobApplications){
         return res.status(400).json({success:false,message:'No any applications found!'});
       }
       return res.status(200).json({success:true,data:jobApplications});
   }catch(err){
-    console.err(err);
+    console.error(err);
     res.status(500).json({success:false,message:'Internal Server Error!'});
   }
-}
+};
+
+//handling job applications
+const handleJobApplications=async (req,res)=>{
+ try{
+  const {applicationId,status}=req.body;
+
+  if(!applicationId || !status){
+    return res.status(400).json({success:false,message:'Missing Required Fields!'});
+  }
+
+  const update=await Applications.update({status:status},{where:{id:applicationId}});
+  
+  res.status(200).json({success:true,data:update,message:'Application Accepted!'});
+ }catch(err){
+  console.error(err);
+  res.status(500).json({success:false,message:'Internal Server Error!'});
+ }
+};
+
+//create client  after package purchase
+const createClient=async (req,res)=>{
+  try{
+    const {userId,productId,startDate,endDate,contactNo,package,renewalStatus,details}=req.body;
+
+    if(!userId || !productId || !startDate || !endDate || !contactNo || !package || !renewalStatus || !details){
+      return res.status(400).json({success:false,message:'Missing Required Fields!'});
+    }
+
+    const isUser=await User.findOne({where:{id:userId}});
+    const isProduct=await Product.findOne({where:{productId:productId}});
+
+    if(!isUser){
+      return res.status(400).json({success:false,message:"User doesn't exist!"});
+    }
+    if(!isProduct){
+      return res.status(400).json({success:false,message:"Product doesn't exist!"});
+    }
+
+    const client=await Client.create({
+      userId:userId,
+      productId:productId,
+      startDate,
+      endDate,
+      contactNo,
+      package,
+      renewalStatus,
+      details
+    });
+
+    if(!client){
+      return res.status(400).json({success:false,message:'Failed To Create Client!'});
+    }
+
+    res.status(200).json({success:true,data:client,message:'Client Created Successfully!'});
+
+  }catch(err){
+    console.error(err);
+    res.status(500).json({status:false,message:'Internal Server Error!'});
+  }
+};
+//update renewal status
+const updateRenewalStatus = async (req,res)=>{
+  try{
+    const {id,renewalStatus} = req.body;
+
+    if(!id || !renewalStatus){
+      return res.status(400).json({success:false,message:'Missing Required Fields!'});
+    }
+
+    const isClient=await Client.findByPk(id);
+
+    if(!isClient){
+      return res.status(400).json({success:false,message:"Client doesn't exist!"});
+    }
+
+    const update=await Client.update({renewalStatus:renewalStatus},{where:{id:id}});
+
+    res.status(200).json({success:true,data:update,message:'Renewal Status Updated'});
+  }catch(err){
+    console.error(err);
+    res.status(500).json({success:false,message:'Internal Server Error!'});
+  }
+};
 module.exports = {
   loginAdmin, fetchApplications, acceptApplication, fetchAllStudents,
-  fetchStudentByName, fetchAllTrainers, fetchTrainerByName,postJob,fetchJobApplications
+  fetchStudentByName, fetchAllTrainers, fetchTrainerByName,postJob,fetchJobApplications,
+  handleJobApplications,createClient,updateRenewalStatus
 };
