@@ -60,5 +60,12 @@ Product.hasMany(File, {
 File.belongsTo(Product, {
     foreignKey: 'productId',
     as: 'product',
-})
+});
+
+Product.associate=(models)=>{
+    Product.hasMany(models.Client,{
+        foreignKey:'productId',
+        as:'client',
+    });
+};
 module.exports = { Product, File };

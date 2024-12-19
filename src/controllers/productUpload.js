@@ -12,7 +12,7 @@ const handleFileUpload = (uploadType) => {
                 const { productname, productdesc, price, category } = req.body;
                 const productImage=req.file?.filename;
 
-                if (!productname || !productdesc || !price || !category) {
+                if (!productname || !productdesc || !price ) {
                     return next(new Error('Missing Required Fields'));
                 }
 

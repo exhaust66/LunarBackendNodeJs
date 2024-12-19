@@ -346,7 +346,7 @@ const createClient=async (req,res)=>{
     });
 
     if(!client){
-      return res.status(400).json({success:false,message:'Failed To Create Client!'});
+      return res.status(400).json({success:false,message:'Failed to Create Client!'});
     }
 
     res.status(200).json({success:true,data:client,message:'Client Created Successfully!'});
@@ -354,6 +354,32 @@ const createClient=async (req,res)=>{
   }catch(err){
     console.error(err);
     res.status(500).json({status:false,message:'Internal Server Error!'});
+  }
+};
+
+//fetch All Clients
+const fetchAllClients = async (req,res)=>{
+  try{
+    const clients=await Client.findAll({
+      include: [{
+        model: User,
+        as: 'user',
+        attributes: ['name', 'email','address'],
+      },{
+    model:Product,
+    as:'product',
+    attributes:['productName'],
+    }],
+    });
+
+    if(!clients){
+      return res.status(400).json({success:false,message:'Failed to Fetch Clients!'});
+    }
+
+    res.status(200).json({success:true,data:clients,message:'Clients Fetched Successfully!'});
+  }catch(err){
+    console.error(err);
+    res.status(500).json({success:false,message:'Internal Server Error!'});
   }
 };
 //update renewal status
@@ -379,8 +405,33 @@ const updateRenewalStatus = async (req,res)=>{
     res.status(500).json({success:false,message:'Internal Server Error!'});
   }
 };
+
+const editClientDetails = async (req,res)=>{
+  try{
+    const {clientId,contactNo,startDate,package,endDate,details}=req.body;
+
+  if(!clientId || !contactNo || !startDate || !package || !endDate || !details){
+    return res.status(400).json({success:false,message:'Missing Required Fields!'});
+  }
+
+  const [affectedRows]=await Client.update({contactNo:contactNo,startDate:startDate,package:package,endDate:endDate,details:details},{where:{id:clientId}});
+
+  if(affectedRows===0){
+    return res.status(400).json({success:false,message:'Update Failed!'});
+  }
+
+  const update=await Client.findByPk(clientId);
+
+  
+  res.status(200).json({success:true,data:update});
+}
+  catch(err){
+    console.error(err);
+    res.status(500).json({success:false,message:'Internal Server Error!'});
+  }
+};
 module.exports = {
   loginAdmin, fetchApplications, acceptApplication, fetchAllStudents,
   fetchStudentByName, fetchAllTrainers, fetchTrainerByName,postJob,fetchJobApplications,
-  handleJobApplications,createClient,updateRenewalStatus
+  handleJobApplications,createClient,updateRenewalStatus,fetchAllClients,editClientDetails
 };
