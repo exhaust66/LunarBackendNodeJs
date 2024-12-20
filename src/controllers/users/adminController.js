@@ -14,6 +14,7 @@ const JobApplication = require('../../models/jobApplication');
 const { application } = require('express');
 const { Product } = require('../../models/product');
 const Client = require('../../models/users/client');
+const Employee = require('../../models/users/employee');
 
 const loginAdmin = async (req, res) => {
   const { username, password } = req.body;
@@ -422,8 +423,91 @@ const editClientDetails = async (req,res)=>{
 
   const update=await Client.findByPk(clientId);
 
-  
   res.status(200).json({success:true,data:update});
+}
+  catch(err){
+    console.error(err);
+    res.status(500).json({success:false,message:'Internal Server Error!'});
+  }
+};
+
+//create employee handler..
+const createEmployee = async (req,res)=>{
+  try{
+      const {userId,position,dateOfHire,salary,type,arrivalTime,departureTime}=req.body;
+
+      if(!userId  || !dateOfHire || !type ){
+        return res.status(400).json({success:false,message:'Missing Required Fields!'});
+      }
+
+      const isUser = await User.findByPk(userId);
+
+      if(!isUser){
+        return res.status(400).json({success:false,message:'User Not Found!'});
+      }
+
+      const createdEmployee = await Employee.create({
+        userId,
+        position,
+        dateOfHire,
+        salary,
+        type,
+        arrivalTime,
+        departureTime,
+      });
+
+      if(!createdEmployee){
+        return res.status(400).json({success:false,message:'Failed To Create Client!'});
+      }
+
+      return res.status(200).json({success:true,message:'Client Created Successful!',data:createdEmployee});
+  }catch(err){
+    console.error(err);
+    res.status(500).json({success:false,message:'Internal Server Error!'});
+  }
+};
+//fetch All Employees
+const fetchAllEmployees = async (req,res)=>{
+  try{
+    const employees = await Employee.findAll({include: [{
+      model: User,
+      as: 'user',
+      attributes: ['name', 'email','address'],
+    }]});
+
+    if(!employees){
+      return res.status(400).json({success:false,message:'Failed To Fetch Employees!'});
+    }
+
+    res.status(200).json({success:true,data:employees});
+  }catch(err){
+    console.error(err);
+    res.status(500).json({success:false,message:'Internal Server Error!'});
+  }
+};
+
+//edit employee details
+const editEmployeeDetails = async (req,res)=>{
+  try{
+    const {clientId,position,dateOfHire,salary,type,arrivalTime,departureTime}=req.body;
+
+  if(!clientId || !position || !dateOfHire || !salary || !type || !arrivalTime || !departureTime){
+    return res.status(400).json({success:false,message:'Missing Required Fields!'});
+  }
+
+  const [affectedRows] = await Employee.update({position:position,dateOfHire:dateOfHire,salary:salary,type:type,arrivalTime:arrivalTime,departureTime:departureTime},{where:{id:clientId}});
+
+  if(affectedRows===0){
+    return res.status(400).json({success:false,message:'Failed To Update!'});
+  }
+  const update = await Employee.findByPk(clientId);
+
+  if(!update){
+    return res.status(400).json({success:false,message:'Failed To Find Employee!'});
+  }
+
+  res.status(200).json({success:true,data:update,message:'Updated Employee Details'});
+  
 }
   catch(err){
     console.error(err);
@@ -433,5 +517,6 @@ const editClientDetails = async (req,res)=>{
 module.exports = {
   loginAdmin, fetchApplications, acceptApplication, fetchAllStudents,
   fetchStudentByName, fetchAllTrainers, fetchTrainerByName,postJob,fetchJobApplications,
-  handleJobApplications,createClient,updateRenewalStatus,fetchAllClients,editClientDetails
+  handleJobApplications,createClient,updateRenewalStatus,fetchAllClients,editClientDetails,
+  createEmployee,fetchAllEmployees,editEmployeeDetails
 };

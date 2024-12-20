@@ -5,7 +5,8 @@ const auth = require('../../middleware/decryptToken');
 const {isAdmin} = require('../../middleware/checkRole');
 
 const {loginAdmin,fetchApplications,fetchAllStudents ,fetchStudentByName, fetchTrainerByName, fetchAllTrainers, acceptApplication,postJob,fetchJobApplications} = require('../../controllers/users/adminController');
-const {createClient,fetchAllClients,handleJobApplications,editClientDetails,updateRenewalStatus}= require('../../controllers/users/adminController'); 
+const {createClient,fetchAllClients,handleJobApplications,editClientDetails,updateRenewalStatus}= require('../../controllers/users/adminController');
+const {createEmployee,fetchAllEmployees,editEmployeeDetails}= require('../../controllers/users/adminController'); 
 const {uploadSingleFile,uploadMultipleFile}=require('../../controllers/productUpload');
 const { checkTrainerAuthenticity,createTrainer,assignProgram } = require('../../controllers/users/trainerController');
 const { checkStudentAuthenticity, createStudent } = require('../../controllers/users/studentController');
@@ -52,6 +53,11 @@ router.post('/createClient',createClient);
 router.post('/updateRenewalStatus',updateRenewalStatus);
 router.get('/fetchAllClients',fetchAllClients);
 router.post('/editClientDetails',editClientDetails);
+
+//employees
+router.post('/createEmployee',createEmployee);
+router.get('/fetchAllEmployees',fetchAllEmployees);
+router.post('/editEmployeeDetails',editEmployeeDetails);
 
 app.use((err, req, res, next) => {
     console.error(err); 

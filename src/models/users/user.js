@@ -65,6 +65,12 @@ User.associate=(models)=>{
   });
 };
 
+User.associate=(models)=>{
+  User.hasOne(models.Employee, {
+    foreignKey:'userId',
+    as:'client',
+  });
+};
 // const File = sequelize.define('File', {
 //   userId: {
 //     type: DataTypes.INTEGER,
