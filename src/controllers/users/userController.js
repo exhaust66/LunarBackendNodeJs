@@ -13,7 +13,7 @@ const getUsers = async (req, res) => {
       return { id, name, email, role, phone, address, profileImage };
     });
 
-    return res.status(200).json({usersData}); // Respond with the list of users
+    return res.status(200).json({data:usersData}); // Respond with the list of users
   } catch (err) {
     return res.status(500).json({ error: err.message }); // Handle errors
   }
@@ -21,13 +21,16 @@ const getUsers = async (req, res) => {
 
 //UPDATE profile by the Users Themselves
 const updateUserProfile = async (req,res)=>{
-  const{phone,address }=req.body;
+  const{email,phone,address }=req.body;
   const profileImage=req.file?.filename;
 
   const userId = req.user.id; //  comes from middleware 
 
-  if(!phone || !address || !profileImage ){
-      return res.status(400).json({ success:false,message:'All fields are required'});
+  if(!email ){
+      return res.status(400).json({ success:false,message:'Email Required!'});
+  }
+  if(!email || !phone || !address || !profileImage ){
+    console.log('Missing Required Fields!');
   }
   try {
       const user = await User.findOne({where:{id:userId}});
@@ -35,7 +38,7 @@ const updateUserProfile = async (req,res)=>{
           console.log('no User available of this id');//for logging
           return res.status(400).json({success:false,message:'Internal Error'})
       }
-      
+      user.email=email;
       user.phone = phone;
       user.address = address;
       user.profileImage=profileImage;

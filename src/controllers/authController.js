@@ -8,21 +8,21 @@ const registerUser = async (req, res) => {
     try {
         const { name, email, password, role } = req.body; // Extract name and email from the request body
     
-        //if any became true, whole statement became true and execute
-        if(!name || !email || !password || !role){
-          return res.status(400).json({message:"All fields are required!!"});
+        // Validate required fields
+        if (!name || !email || !password || !role) {
+            return res.status(422).json({ success: false, message: "All fields are required!" });
         }
 
-        //if any became false, whole statement became false and ignore
-        if(!role.includes('Student') && !role.includes('Trainer') && !role.includes('Client') ){ 
-          console.log("Invalid role spelling"); //for debugging
-          return res.status(500).json({message:"Internal Error !"});
+        // Validate role against allowed values
+        const allowedRoles = ["Student", "Trainer", "Client"];
+        if (!allowedRoles.includes(role)) {
+            console.error("Invalid role provided:", role); 
+            return res.status(422).json({ success: false, message: "Invalid role! Must be Student, Trainer, or Client." });
         }
-    
         //checking if user email already exists
         const alreadyExists = await User.findOne({where:{email}});
         if(alreadyExists ){
-          return res.status(400).json({message:'User email already exists!!'})
+          return res.status(409).json({message:'User email already exists!!'})
         }
     
         //hashing password
@@ -42,6 +42,7 @@ const registerUser = async (req, res) => {
             message: 'New user created successfully!!'
         }); 
     } catch (err) {
+        console.error('Error Creating User!',err);
     return res.status(500).json({success:false, message: 'New user creation unsucessfull!!'}); // Handle errors
     }
 };
@@ -67,7 +68,7 @@ const loginUser = async (req, res) => {
         
         const token = jwt.sign({ 
                 id,name,email,role 
-            }, process.env.JWT_SECRET, {expiresIn: '1d'} //1 day expiryDate
+            }, process.env.JWT_SECRET,  //1 day expiryDate
         ); 
 
         res.status(200).json({
@@ -77,7 +78,7 @@ const loginUser = async (req, res) => {
         });
     } catch (error) {
         console.error('Error during login:', error);
-        res.status(500).json({ success: false, message: 'Internal server error!' });
+        res.status(500).json({ success: false,data:user, message: 'Internal server error!' });
     }
 };
 
