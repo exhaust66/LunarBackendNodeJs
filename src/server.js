@@ -21,7 +21,9 @@ app.use('/api/students', studentRoutes);
 app.use('/api/admin',adminRoutes);
 app.use('/api/trainer',trainerRoutes);
 
-
+app.get("/hello",(req,res)=>{
+    res.send("hello")
+})
 // Global error handler
 app.use((err, req, res, next) => {
     console.error(err.stack);

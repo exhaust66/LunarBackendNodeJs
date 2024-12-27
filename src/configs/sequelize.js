@@ -1,11 +1,11 @@
 const { Sequelize } = require('sequelize');
 const config = require('./config'); // Import DB settings
-
 const sequelize = new Sequelize(config.DB, config.USER, config.PASSWORD, {
     host: config.HOST,
     dialect: config.dialect,
     pool: config.pool,
-    logging:false
+    logging:false,
+    port: config.PORT
 });
 sequelize
   .authenticate()
