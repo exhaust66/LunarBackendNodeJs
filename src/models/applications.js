@@ -26,11 +26,22 @@ const Applications = sequelize.define('Applications',{
         allowNull:false
     },
     type:{
-        type:DataTypes.ENUM('Training','Internship'),
-        allowNull:true 
+        type:DataTypes.STRING,
+        allowNull:true ,
+        defaultValue:'Trainings'
     },
 },{
     tableName:'aplications'
-})
+});
+
+Applications.belongsTo(User, {
+     foreignKey: 'userId',
+     as: 'user',
+   });
+
+   Applications.belongsTo(Program, {
+    foreignKey: 'programId', // This is the foreign key in Applications
+    as: 'program',           // The alias for the Program model
+  });
 
 module.exports = Applications;

@@ -21,5 +21,11 @@ const Program=sequelize.define('Program',{
         type: DataTypes.DATEONLY,
     },
 });
+Program.associate=(models)=>{
+    Program.hasOne(models.Application, {
+      foreignKey:'userId',
+      as:'program',
+    });
+  };
 
 module.exports=Program;

@@ -59,6 +59,13 @@ User.associate = (models) => {
   });
 };
 User.associate=(models)=>{
+    User.hasOne(models.Applications,{
+      foreignKey:'userId',
+      as:'application',
+    });
+};
+
+User.associate=(models)=>{
   User.hasOne(models.Client, {
     foreignKey:'userId',
     as:'client',

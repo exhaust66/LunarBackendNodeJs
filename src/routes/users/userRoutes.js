@@ -19,7 +19,7 @@ router.post('/updateTrainerProfile',[auth,isTrainer],checkTrainerAuthenticity,up
 
 //sending application
 //routes for applications
-router.post('/postApplication',createApplications);
+router.post('/postApplication/:userId/:programId',createApplications);
 
 //router for job application
 router.post('/sendJobApplication',upload.single('file'),sendJobApplication);

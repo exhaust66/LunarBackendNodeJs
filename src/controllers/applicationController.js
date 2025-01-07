@@ -4,13 +4,13 @@ const Student = require('../models/users/student');
 
 const createApplications = async (req, res) => {
     try {
-        const { userId, programId, type } = req.body;
-
-        if (!userId || !programId || !type) {
-            res.status(400).json({ Success: false, message: 'All Fields are required!' });
+        const { userId, programId } = req.params;
+        const type = 'Trainings';
+        if (!userId || !programId) {
+            return res.status(400).json({ Success: false, message: 'Missing UserId or ProgramId!' });
         }
         const applications = await Applications.create({userId,type,programId});
-        console.log("I am here")
+    
         res.status(200).json({
             success: true,
             message: 'Application Submitted Successfully!',

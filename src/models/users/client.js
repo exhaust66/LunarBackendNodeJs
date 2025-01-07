@@ -1,29 +1,14 @@
 const { DataTypes } = require('sequelize');
 const sequelize=require('../../configs/sequelize');
-const User= require("./user");
-const {Product}= require("../product");
 
 const Client=sequelize.define('Client',{
-    userId:{
-        type: DataTypes.INTEGER,
-        
-        references: {
-            model: User, 
-            key: 'id', 
-        },
-        allowNull: false,
-        onDelete: 'CASCADE', // Automatically delete related client records when deleted in user table
-        onUpdate: 'CASCADE'  // Automatically update references on user update
-    },
-    productId:{
-        type:DataTypes.INTEGER,
-        references:{
-            model:Product,
-            key:'productId',
-        },
+    name:{
+        type:DataTypes.STRING,
         allowNull:false,
-        onDelete:'CASCADE',
-        onUpdate:'CASCADE',
+    },
+    product:{
+        type:DataTypes.STRING,
+        allowNull:false,
     },
    contactNo: {
         type: DataTypes.INTEGER,
@@ -42,7 +27,7 @@ const Client=sequelize.define('Client',{
         allowNull: false,
     },
     renewalStatus: {
-        type: DataTypes.ENUM('Renewed', 'Expired'),
+        type: DataTypes.ENUM('New','Renewed', 'Expired'),
         allowNull: false,
     },
     details:{
@@ -51,14 +36,5 @@ const Client=sequelize.define('Client',{
     },
 });
 
-Client.belongsTo(User, {
-    foreignKey: 'id',
-    as: 'user',
-});
-
-Client.belongsTo(Product, {
-    foreignKey: 'id',
-    as: 'product',
-});
 
 module.exports= Client;

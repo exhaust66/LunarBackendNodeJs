@@ -4,21 +4,21 @@ const upload = require('../../configs/multer');
 const auth = require('../../middleware/decryptToken');
 const {isAdmin} = require('../../middleware/checkRole');
 
-const {loginAdmin,fetchApplications,fetchAllStudents ,fetchStudentByName, fetchTrainerByName, fetchAllTrainers, acceptApplication,postJob,fetchJobApplications} = require('../../controllers/users/adminController');
-const {createClient,fetchAllClients,handleJobApplications,editClientDetails,updateRenewalStatus}= require('../../controllers/users/adminController');
+const {loginAdmin,handleJobApplications,fetchApplications,fetchAllStudents ,fetchStudentByName, fetchTrainerByName, fetchAllTrainers, acceptApplication,postJob,fetchJobApplications} = require('../../controllers/users/adminController');
 const {createEmployee,fetchAllEmployees,editEmployeeDetails}= require('../../controllers/users/adminController'); 
 const {uploadSingleFile,uploadMultipleFile}=require('../../controllers/productUpload');
 const { checkTrainerAuthenticity,createTrainer,assignProgram } = require('../../controllers/users/trainerController');
 const { checkStudentAuthenticity, createStudent } = require('../../controllers/users/studentController');
 const {getUsers}=require('../../controllers/users/userController');
 const { createProgram } = require('../../controllers/programController'); 
+const {createClient,fetchAllClients,editClientDetails,updateRenewalStatus,deleteClient} = require('../../controllers/users/clientControl');
 
 
 const app=express();
 const router = express.Router();
 
 router.post('/login', loginAdmin); 
-router.post('/fetchApplications', fetchApplications); 
+router.get('/fetchApplications', fetchApplications); 
 router.post('/handleApplicationStatus', acceptApplication); 
 router.post('/singleUpload',upload.single('file'),uploadSingleFile);
 router.post('/multipleUpload',upload.array('files',5),uploadMultipleFile);
@@ -50,9 +50,10 @@ router.post('/handleJobApplication',handleJobApplications);
 
 //  client
 router.post('/createClient',createClient);
-router.post('/updateRenewalStatus',updateRenewalStatus);
+router.delete('/deleteClient/:id',deleteClient);
+router.put('/updateRenewalStatus',updateRenewalStatus);
 router.get('/fetchAllClients',fetchAllClients);
-router.post('/editClientDetails',editClientDetails);
+router.put('/editClientDetails/:id',editClientDetails);
 
 //employees
 router.post('/createEmployee',createEmployee);

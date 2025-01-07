@@ -3,13 +3,14 @@ const jwt = require('jsonwebtoken');
 const Sequelize = require('../../configs/sequelize');
 const { Op } = require('sequelize');
 const Admin = require('../../models/users/admin');
+const Program = require('../../models/program');
 const Student = require('../../models/users/student');
 const User = require('../../models/users/user');
 const Enrollment = require('../../models/enrollment');
 const Applications = require('../../models/applications');
 const Trainer = require('../../models/users/trainer');
-const schedule  = require('node-schedule');
-const Job=require('../../models/job');
+const schedule = require('node-schedule');
+const Job = require('../../models/job');
 const JobApplication = require('../../models/jobApplication');
 const { Product } = require('../../models/product');
 const Client = require('../../models/users/client');
@@ -50,7 +51,21 @@ const loginAdmin = async (req, res) => {
 //handling get request for applications
 const fetchApplications = async (req, res) => {
   try {
-    const applications = await Applications.findAll();
+    const applications = await Applications.findAll({
+      include: [
+        {
+          model: User, 
+          as: 'user',  
+          attributes: ['name'],  
+        },
+        {
+          model: Program,
+          as:'program',  
+          attributes: ['title'], 
+        },
+      ],
+      attributes: { exclude: ['userId', 'programId'] },  // Exclude userId and programId from the Application model
+    });
     if (!applications) {
       res.status(400).json({ success: false, message: 'No Applications Found!' });
     }
@@ -65,42 +80,69 @@ const fetchApplications = async (req, res) => {
 //handling status change and creating student and enrollment if accepted
 const acceptApplication = async (req, res) => {
   try {
-    const { applicationId, userId, status } = req.body;
+    const { status } = req.body;
+    const { userId, applicationId } = req.params;
 
-    if (!applicationId || !status) {
+    // Validate input
+    if (!userId || !applicationId || !status) {
       return res.status(400).json({ success: false, message: 'Missing Required Fields!' });
     }
+
+    // Find the application by ID
     const application = await Applications.findByPk(applicationId);
 
+    // Check if application exists
     if (!application) {
-      return res.status(400).json({ success: false, message: 'Application not found!' });
+      return res.status(404).json({ success: false, message: 'Application not found!' });
     }
-    //create student and enrollment when application is accepted
+
+    // Handle 'Accepted' status
     if (status === 'Accepted') {
+      // Create student and enrollment
       const student = await createStudent(userId);
-      const enrollment = await createEnrollment(student.id, application.programId);
-      if (!enrollment || !student) {
-        return res.status(500).json({ success: false, message: ' Failed to create student or enrollment!' });
+      if (!student) {
+        return res.status(500).json({ success: false, message: 'Failed to create student!' });
       }
-      application.status='Accepted';//the accepted application will remain for 24hrs
-      application.save();
-      //delete the application after 24hrs of being accepted
-      const deletionTime = new Date(Date.now()+ 24 * 60 * 60 * 1000);
-      schedule.scheduleJob(deletionTime, async()=>{
-          try{
-            await application.destroy();
-            console.log(`Application with id ${applicationId} deleted!`);
-          }catch(err){
-            console.error('Error destroying Application!',err);
-          }
+
+      const enrollment = await createEnrollment(student.id, application.programId);
+      if (!enrollment) {
+        return res.status(500).json({ success: false, message: 'Failed to create enrollment!' });
+      }
+
+      // Update the application status to "Accepted"
+      application.status = 'Accepted';
+      await application.save();
+
+      // Schedule application deletion after 24 hours
+      const deletionTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      schedule.scheduleJob(deletionTime, async () => {
+        try {
+          await application.destroy();
+          console.log(`Application with id ${applicationId} deleted after 24 hours!`);
+        } catch (err) {
+          console.error('Error destroying application!', err);
+        }
       });
-      res.status(200).json({ success: true, data: { student, enrollment } });
+
+      // Respond with student and enrollment data
+      res.status(200).json({
+        success: true,
+        message: 'Application Accepted!',
+        data: { student, enrollment },
+      });
+    } else {
+      // Handle other statuses (optional)
+      return res.status(400).json({
+        success: false,
+        message: `Status '${status}' is not valid! Please provide 'Accepted' status.`,
+      });
     }
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ success: false, message: 'Internal Server Error!' });
+    console.error(err);
+    return res.status(500).json({ success: false, message: 'Internal Server Error!' });
   }
 };
+
 //function to create student--is called when application is accepted
 async function createStudent(userId) {
   try {
@@ -254,268 +296,154 @@ const fetchTrainerByName = async (req, res) => {
 };
 
 //handling posting a job
-const postJob=async (req,res)=>{
-  try{
-      const {title,description,salary,location,jobType,applicationDeadline}=req.body;
+const postJob = async (req, res) => {
+  try {
+    const { title, description, salary, location, jobType, applicationDeadline } = req.body;
 
-      if(!title || !description || !salary || !jobType || !applicationDeadline){
-          return res.status(400).json({success:false,message:'Missing Required Fields!'});
-      }
+    if (!title || !description || !salary || !jobType || !applicationDeadline) {
+      return res.status(400).json({ success: false, message: 'Missing Required Fields!' });
+    }
 
-      const postedJob=await Job.create({
-        title,
-        description,
-        salary,
-        jobType,
-        applicationDeadline,
-        location,
-      });
+    const postedJob = await Job.create({
+      title,
+      description,
+      salary,
+      jobType,
+      applicationDeadline,
+      location,
+    });
 
-      if(!postedJob){
-          return res.satus(400).json({success:false,message:'Failed to post job!'});
-      }
+    if (!postedJob) {
+      return res.satus(400).json({ success: false, message: 'Failed to post job!' });
+    }
 
-      res.status(200).json({success:true,data:postedJob,message:'Job posted successfully!'});
+    res.status(200).json({ success: true, data: postedJob, message: 'Job posted successfully!' });
 
-  }catch(err){
+  } catch (err) {
     console.error(err);
-    res.status(500).json({success:false,message:'Internal Server Error!'});
+    res.status(500).json({ success: false, message: 'Internal Server Error!' });
   }
 };
 //get req to fetch all job applications
-const fetchJobApplications=async (req,res)=>{
-  try{
-      const jobApplications=await JobApplication.findAll();
+const fetchJobApplications = async (req, res) => {
+  try {
+    const jobApplications = await JobApplication.findAll();
 
-      if(!jobApplications){
-        return res.status(400).json({success:false,message:'No any applications found!'});
-      }
-      return res.status(200).json({success:true,data:jobApplications});
-  }catch(err){
+    if (!jobApplications) {
+      return res.status(400).json({ success: false, message: 'No any applications found!' });
+    }
+    return res.status(200).json({ success: true, data: jobApplications });
+  } catch (err) {
     console.error(err);
-    res.status(500).json({success:false,message:'Internal Server Error!'});
+    res.status(500).json({ success: false, message: 'Internal Server Error!' });
   }
 };
 
 //handling job applications
-const handleJobApplications=async (req,res)=>{
- try{
-  const {applicationId,status}=req.body;
+const handleJobApplications = async (req, res) => {
+  try {
+    const { applicationId, status } = req.body;
 
-  if(!applicationId || !status){
-    return res.status(400).json({success:false,message:'Missing Required Fields!'});
-  }
-
-  const update=await Applications.update({status:status},{where:{id:applicationId}});
-  
-  res.status(200).json({success:true,data:update,message:'Application Accepted!'});
- }catch(err){
-  console.error(err);
-  res.status(500).json({success:false,message:'Internal Server Error!'});
- }
-};
-
-//create client  after package purchase
-const createClient=async (req,res)=>{
-  try{
-    const {userId,productId,startDate,endDate,contactNo,package,renewalStatus,details}=req.body;
-
-    if(!userId || !productId || !startDate || !endDate || !contactNo || !package || !renewalStatus || !details){
-      return res.status(400).json({success:false,message:'Missing Required Fields!'});
+    if (!applicationId || !status) {
+      return res.status(400).json({ success: false, message: 'Missing Required Fields!' });
     }
 
-    const isUser=await User.findOne({where:{id:userId}});
-    const isProduct=await Product.findOne({where:{productId:productId}});
+    const update = await Applications.update({ status: status }, { where: { id: applicationId } });
 
-    if(!isUser){
-      return res.status(400).json({success:false,message:"User doesn't exist!"});
-    }
-    if(!isProduct){
-      return res.status(400).json({success:false,message:"Product doesn't exist!"});
-    }
-
-    const client=await Client.create({
-      userId:userId,
-      productId:productId,
-      startDate,
-      endDate,
-      contactNo,
-      package,
-      renewalStatus,
-      details
-    });
-
-    if(!client){
-      return res.status(400).json({success:false,message:'Failed to Create Client!'});
-    }
-
-    res.status(200).json({success:true,data:client,message:'Client Created Successfully!'});
-
-  }catch(err){
+    res.status(200).json({ success: true, data: update, message: 'Application Accepted!' });
+  } catch (err) {
     console.error(err);
-    res.status(500).json({status:false,message:'Internal Server Error!'});
-  }
-};
-
-//fetch All Clients
-const fetchAllClients = async (req,res)=>{
-  try{
-    const clients=await Client.findAll({
-      include: [{
-        model: User,
-        as: 'user',
-        attributes: ['name', 'email','address'],
-      },{
-    model:Product,
-    as:'product',
-    attributes:['productName'],
-    }],
-    });
-
-    if(!clients){
-      return res.status(400).json({success:false,message:'Failed to Fetch Clients!'});
-    }
-
-    res.status(200).json({success:true,data:clients,message:'Clients Fetched Successfully!'});
-  }catch(err){
-    console.error(err);
-    res.status(500).json({success:false,message:'Internal Server Error!'});
-  }
-};
-//update renewal status
-const updateRenewalStatus = async (req,res)=>{
-  try{
-    const {id,renewalStatus} = req.body;
-
-    if(!id || !renewalStatus){
-      return res.status(400).json({success:false,message:'Missing Required Fields!'});
-    }
-
-    const isClient=await Client.findByPk(id);
-
-    if(!isClient){
-      return res.status(400).json({success:false,message:"Client doesn't exist!"});
-    }
-
-    const update=await Client.update({renewalStatus:renewalStatus},{where:{id:id}});
-
-    res.status(200).json({success:true,data:update,message:'Renewal Status Updated'});
-  }catch(err){
-    console.error(err);
-    res.status(500).json({success:false,message:'Internal Server Error!'});
-  }
-};
-
-const editClientDetails = async (req,res)=>{
-  try{
-    const {clientId,contactNo,startDate,package,endDate,details}=req.body;
-
-  if(!clientId || !contactNo || !startDate || !package || !endDate || !details){
-    return res.status(400).json({success:false,message:'Missing Required Fields!'});
-  }
-
-  const [affectedRows]=await Client.update({contactNo:contactNo,startDate:startDate,package:package,endDate:endDate,details:details},{where:{id:clientId}});
-
-  if(affectedRows===0){
-    return res.status(400).json({success:false,message:'Update Failed!'});
-  }
-
-  const update=await Client.findByPk(clientId);
-
-  res.status(200).json({success:true,data:update});
-}
-  catch(err){
-    console.error(err);
-    res.status(500).json({success:false,message:'Internal Server Error!'});
+    res.status(500).json({ success: false, message: 'Internal Server Error!' });
   }
 };
 
 //create employee handler..
-const createEmployee = async (req,res)=>{
-  try{
-      const {userId,position,dateOfHire,salary,type,arrivalTime,departureTime}=req.body;
+const createEmployee = async (req, res) => {
+  try {
+    const { userId, position, dateOfHire, salary, type, arrivalTime, departureTime } = req.body;
 
-      if(!userId  || !dateOfHire || !type ){
-        return res.status(400).json({success:false,message:'Missing Required Fields!'});
-      }
+    if (!userId || !dateOfHire || !type) {
+      return res.status(400).json({ success: false, message: 'Missing Required Fields!' });
+    }
 
-      const isUser = await User.findByPk(userId);
+    const isUser = await User.findByPk(userId);
 
-      if(!isUser){
-        return res.status(400).json({success:false,message:'User Not Found!'});
-      }
+    if (!isUser) {
+      return res.status(400).json({ success: false, message: 'User Not Found!' });
+    }
 
-      const createdEmployee = await Employee.create({
-        userId,
-        position,
-        dateOfHire,
-        salary,
-        type,
-        arrivalTime,
-        departureTime,
-      });
+    const createdEmployee = await Employee.create({
+      userId,
+      position,
+      dateOfHire,
+      salary,
+      type,
+      arrivalTime,
+      departureTime,
+    });
 
-      if(!createdEmployee){
-        return res.status(400).json({success:false,message:'Failed To Create Client!'});
-      }
+    if (!createdEmployee) {
+      return res.status(400).json({ success: false, message: 'Failed To Create Client!' });
+    }
 
-      return res.status(200).json({success:true,message:'Client Created Successful!',data:createdEmployee});
-  }catch(err){
+    return res.status(200).json({ success: true, message: 'Client Created Successful!', data: createdEmployee });
+  } catch (err) {
     console.error(err);
-    res.status(500).json({success:false,message:'Internal Server Error!'});
+    res.status(500).json({ success: false, message: 'Internal Server Error!' });
   }
 };
 //fetch All Employees
-const fetchAllEmployees = async (req,res)=>{
-  try{
-    const employees = await Employee.findAll({include: [{
-      model: User,
-      as: 'user',
-      attributes: ['name', 'email','address'],
-    }]});
+const fetchAllEmployees = async (req, res) => {
+  try {
+    const employees = await Employee.findAll({
+      include: [{
+        model: User,
+        as: 'user',
+        attributes: ['name', 'email', 'address'],
+      }]
+    });
 
-    if(!employees){
-      return res.status(400).json({success:false,message:'Failed To Fetch Employees!'});
+    if (!employees) {
+      return res.status(400).json({ success: false, message: 'Failed To Fetch Employees!' });
     }
 
-    res.status(200).json({success:true,data:employees});
-  }catch(err){
+    res.status(200).json({ success: true, data: employees });
+  } catch (err) {
     console.error(err);
-    res.status(500).json({success:false,message:'Internal Server Error!'});
+    res.status(500).json({ success: false, message: 'Internal Server Error!' });
   }
 };
 
 //edit employee details
-const editEmployeeDetails = async (req,res)=>{
-  try{
-    const {clientId,position,dateOfHire,salary,type,arrivalTime,departureTime}=req.body;
+const editEmployeeDetails = async (req, res) => {
+  try {
+    const { clientId, position, dateOfHire, salary, type, arrivalTime, departureTime } = req.body;
 
-  if(!clientId || !position || !dateOfHire || !salary || !type || !arrivalTime || !departureTime){
-    return res.status(400).json({success:false,message:'Missing Required Fields!'});
+    if (!clientId || !position || !dateOfHire || !salary || !type || !arrivalTime || !departureTime) {
+      return res.status(400).json({ success: false, message: 'Missing Required Fields!' });
+    }
+
+    const [affectedRows] = await Employee.update({ position: position, dateOfHire: dateOfHire, salary: salary, type: type, arrivalTime: arrivalTime, departureTime: departureTime }, { where: { id: clientId } });
+
+    if (affectedRows === 0) {
+      return res.status(400).json({ success: false, message: 'Failed To Update!' });
+    }
+    const update = await Employee.findByPk(clientId);
+
+    if (!update) {
+      return res.status(400).json({ success: false, message: 'Failed To Find Employee!' });
+    }
+
+    res.status(200).json({ success: true, data: update, message: 'Updated Employee Details' });
+
   }
-
-  const [affectedRows] = await Employee.update({position:position,dateOfHire:dateOfHire,salary:salary,type:type,arrivalTime:arrivalTime,departureTime:departureTime},{where:{id:clientId}});
-
-  if(affectedRows===0){
-    return res.status(400).json({success:false,message:'Failed To Update!'});
-  }
-  const update = await Employee.findByPk(clientId);
-
-  if(!update){
-    return res.status(400).json({success:false,message:'Failed To Find Employee!'});
-  }
-
-  res.status(200).json({success:true,data:update,message:'Updated Employee Details'});
-  
-}
-  catch(err){
+  catch (err) {
     console.error(err);
-    res.status(500).json({success:false,message:'Internal Server Error!'});
+    res.status(500).json({ success: false, message: 'Internal Server Error!' });
   }
 };
 module.exports = {
   loginAdmin, fetchApplications, acceptApplication, fetchAllStudents,
-  fetchStudentByName, fetchAllTrainers, fetchTrainerByName,postJob,fetchJobApplications,
-  handleJobApplications,createClient,updateRenewalStatus,fetchAllClients,editClientDetails,
-  createEmployee,fetchAllEmployees,editEmployeeDetails
+  fetchStudentByName, fetchAllTrainers, fetchTrainerByName, postJob, fetchJobApplications,
+  handleJobApplications,createEmployee, fetchAllEmployees, editEmployeeDetails
 };
