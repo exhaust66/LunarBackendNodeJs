@@ -16,7 +16,7 @@ const checkTrainerAuthenticity = async(req,res,next) =>{
             console.log("Not a trainer id");//for debugging
             return res.status(500).json({success:false, message: `Internal Error`}); // Handle errors
         }
-
+        
         
         req.userId = isUser.id;
         next(); // Proceed to the next middleware or route handler
@@ -58,18 +58,19 @@ const createTrainer = async (req,res)=>{
 }
 
 //ADMIN assigns the training to the trainer
-const assignTraining = async (req,res)=>{
-    const {trainingId } = req.body;
-    const userId = req.userId; // userId comes from middleware  --checkTrainerAuthenticity--
+const assignProgram = async (req,res)=>{
+    const {programId,trainerId } = req.body;
+    // const trainerId = req.trainerId; // trainerId comes from middleware  --checkTrainerAuthenticity--
 
-    console.log(userId);
-    if(!userId || !trainingId ){
+    console.log("Trainer Id:",trainerId);
+    console.log("Program Id:",programId);
+    if(!programId || !trainerId ){
         return res.status(400).json({success:false,message:'Missing required Fields !'});
     }
 
     try {
         //check if trainer exists
-        const trainer = await Trainer.findOne({where:{userId}});
+        const trainer = await Trainer.findOne({where:{id:trainerId}});
 
         if(!trainer){
             return res.status(400).json({success:false,message:'User is not a trainer'});
@@ -130,6 +131,6 @@ const updateTrainerProfile = async (req,res)=>{
 module.exports = {
     checkTrainerAuthenticity,
     createTrainer,
-    assignTraining,
+    assignProgram,
     updateTrainerProfile
 }
