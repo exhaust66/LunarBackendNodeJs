@@ -113,10 +113,6 @@ User.associate=(models)=>{
 //   foreignKey: 'userId',
 //   as: 'user',
 // });
-<<<<<<< HEAD
-
-module.exports = User;
-=======
 // User.associate = (models) => {
 //   User.hasOne(models.Student, {
 //     foreignKey: 'userId',
@@ -124,4 +120,3 @@ module.exports = User;
 //   });
 // };
 module.exports = User;
->>>>>>> 7ad0abeebc523929b4fc9d98cea0c5e71ce7dc06
