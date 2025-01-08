@@ -19,7 +19,7 @@ const router = express.Router();
 
 router.post('/login', loginAdmin); 
 router.get('/fetchApplications', fetchApplications); 
-router.post('/handleApplicationStatus', acceptApplication); 
+router.post('/handleApplicationStatus/:userId/:applicationId', acceptApplication); 
 router.post('/singleUpload',upload.single('file'),uploadSingleFile);
 router.post('/multipleUpload',upload.array('files',5),uploadMultipleFile);
 
