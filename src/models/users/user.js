@@ -1,6 +1,7 @@
 const sequelize = require('../../configs/sequelize');
 const { DataTypes } = require('sequelize');
 
+
 const User = sequelize.define('User', {
   id: {
     type: DataTypes.INTEGER,
@@ -45,6 +46,38 @@ const User = sequelize.define('User', {
   tableName: 'users'
 });
 
+// Define associations
+User.associate = (models) => {
+  User.hasOne(models.Student, {
+    foreignKey: 'userId',
+    as: 'student',
+  });
+
+  User.hasOne(models.Trainer,{
+    foreignKey:'userId',
+    as:'trainer'
+  });
+};
+User.associate=(models)=>{
+    User.hasOne(models.Applications,{
+      foreignKey:'userId',
+      as:'application',
+    });
+};
+
+User.associate=(models)=>{
+  User.hasOne(models.Client, {
+    foreignKey:'userId',
+    as:'client',
+  });
+};
+
+User.associate=(models)=>{
+  User.hasOne(models.Employee, {
+    foreignKey:'userId',
+    as:'client',
+  });
+};
 // const File = sequelize.define('File', {
 //   userId: {
 //     type: DataTypes.INTEGER,
@@ -80,5 +113,15 @@ const User = sequelize.define('User', {
 //   foreignKey: 'userId',
 //   as: 'user',
 // });
+<<<<<<< HEAD
 
 module.exports = User;
+=======
+// User.associate = (models) => {
+//   User.hasOne(models.Student, {
+//     foreignKey: 'userId',
+//     as: 'student',
+//   });
+// };
+module.exports = User;
+>>>>>>> 7ad0abeebc523929b4fc9d98cea0c5e71ce7dc06

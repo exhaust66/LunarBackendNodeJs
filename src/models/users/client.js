@@ -1,19 +1,16 @@
 const { DataTypes } = require('sequelize');
-const sequelize=require('../configs/sequelize');
-const User= require("./user");
+const sequelize=require('../../configs/sequelize');
 
 const Client=sequelize.define('Client',{
-    userId:{
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: User, 
-            key: 'id', 
-        },
-        onDelete: 'CASCADE', // Automatically delete related client records when deleted in user table
-        onUpdate: 'CASCADE'  // Automatically update references on user update
+    name:{
+        type:DataTypes.STRING,
+        allowNull:false,
     },
-    subscriptionId: {
+    product:{
+        type:DataTypes.STRING,
+        allowNull:false,
+    },
+   contactNo: {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
@@ -21,14 +18,23 @@ const Client=sequelize.define('Client',{
         type: DataTypes.DATE,
         allowNull: false,
     },
+    package:{
+        type:DataTypes.ENUM('1 Month','6 Months','12 Months'),
+        allowNull:false,
+    },
     endDate: {
         type: DataTypes.DATE,
         allowNull: false,
     },
     renewalStatus: {
-        type: DataTypes.ENUM('Pending', 'Renewed', 'Expired'),
+        type: DataTypes.ENUM('New','Renewed', 'Expired'),
         allowNull: false,
     },
+    details:{
+        type:DataTypes.TEXT,
+        allowNull:true,
+    },
 });
+
 
 module.exports= Client;

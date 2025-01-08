@@ -1,3 +1,4 @@
+const Program = require('../../models/program');
 const Trainer =require('../../models/users/trainer');
 const User = require('../../models/users/user');
 
@@ -60,11 +61,9 @@ const createTrainer = async (req,res)=>{
 //ADMIN assigns the training to the trainer
 const assignProgram = async (req,res)=>{
     const {programId,trainerId } = req.body;
-    // const trainerId = req.trainerId; // trainerId comes from middleware  --checkTrainerAuthenticity--
+    // const userId = req.userId; // userId comes from middleware  --checkTrainerAuthenticity--
 
-    console.log("Trainer Id:",trainerId);
-    console.log("Program Id:",programId);
-    if(!programId || !trainerId ){
+    if(!trainerId || !programId ){
         return res.status(400).json({success:false,message:'Missing required Fields !'});
     }
 
@@ -76,20 +75,29 @@ const assignProgram = async (req,res)=>{
             return res.status(400).json({success:false,message:'User is not a trainer'});
         }
 
-        //parsing the avaliable assignedTraining JSON
-        let availableTrainingIds = JSON.parse(trainer.assignedTraining || []); 
-
-        if(availableTrainingIds.includes(trainingId)){ 
-            return res.status(400).json({success:false,message:'This training is already assigned'});
+        //parsing the avaliable assignedProgram JSON
+        const isProgram = await Program.findOne({where:{id:programId}});
+        if(!isProgram){
+            return res.status(400).json({success:false,message:"Program not available"})
         }
 
-        availableTrainingIds.push(trainingId);
-        trainer.assignedTraining = availableTrainingIds;
-        await trainer.save(); //save the changes to the database
+        let availableProgramIds = JSON.parse(trainer.assignedProgram || []); 
+
+        if(availableProgramIds.includes(Number.parseInt(programId))){ 
+            return res.status(400).json({success:false,message:'This Program is already assigned'});
+        }
+        
+        availableProgramIds.push(Number.parseInt(programId));
+        trainer.assignedProgram = availableProgramIds;
+        
+        const updatedData = await trainer.save(); //save the changes to the database
+
+        const {id,userId,assignedProgram,experience,description} = updatedData;
 
         return res.status(200).json({
             success:true,
             message: 'Training assigned successfully.',
+            data:{id,userId,assignedProgram,experience,description}
         })
     } catch (error) {
         return res.status(400).json({

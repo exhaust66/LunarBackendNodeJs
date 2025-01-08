@@ -7,7 +7,7 @@ const Student = sequelize.define('Student', {
      userId: {
           type: DataTypes.INTEGER,
           references: {
-               model: User,
+               model: "users",
                key: 'id'
           },
           onDelete: 'CASCADE',
@@ -17,6 +17,19 @@ const Student = sequelize.define('Student', {
           type: DataTypes.STRING,
           allowNull: true,
      },
+},{
+     tableName:'students',
 });
+Student.belongsTo(User, {
+     foreignKey: 'userId',
+     as: 'user',
+   });
+
+Student.associate=(models)=>{
+     Student.hasMany(models.Enrollment,{
+          foreignKey:'studentId',
+          as:'student'
+     });
+};
 
 module.exports = Student;

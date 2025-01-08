@@ -23,11 +23,13 @@ async function seedAdmin() {
       });
 
       const {id,name} = admin;
-      const token = jwt.sign({ id,name,email:'admin@gmail.com',role:'Admin' }, process.env.JWT_SECRET,{ expiresIn: '1d' }); 
+      const token = jwt.sign({ id,name,email:'admin@gmail.com',role:'Admin' }, process.env.JWT_SECRET,{ expiresIn: '365d' }); 
+      
       
       console.log("Admin Token:",token); //consoling the user token
 
       console.log('Admin created successfully!');
+      
     } else {
       console.log('Admin already exists');
     }
