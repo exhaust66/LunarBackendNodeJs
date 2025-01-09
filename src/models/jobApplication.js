@@ -24,12 +24,13 @@ const JobApplication=sequelize.define('JobApplication',{
         },
         allowNull:false,
     },
-    message:{
-        type:DataTypes.STRING,
-        allowNull:false
-    },
     contact:{
         type:DataTypes.STRING,
+        allowNull:false,
+    },
+    status:{
+        type:DataTypes.ENUM('Accepted','Pending','Rejected'),
+        defaultValue:'Pending',
         allowNull:false,
     },
     resume:{
@@ -38,5 +39,10 @@ const JobApplication=sequelize.define('JobApplication',{
     },
     
 });
+
+JobApplication.belongsTo(User,{
+    foreignKey:"userId",
+    as:"users"
+})
 
 module.exports=JobApplication;

@@ -57,10 +57,11 @@ const updateUserProfile = async (req,res)=>{
 //send job applications
 const sendJobApplication=async (req,res)=>{
   try{
-      const {jobId,userId,message,contact}=req.body;
+      const {jobId,userId} = req.params;
+      const {contact}=req.body;
       const resume=req.file?.filename;
 
-      if(!jobId || !userId || !message || !contact ){
+      if(!jobId || !userId  || !contact ){
         return res.status(400).json({success:false,message:'Missing Required Fields!'});
       }
 
@@ -79,13 +80,14 @@ const sendJobApplication=async (req,res)=>{
       if(!isJob){
         return res.status(400).json({success:false,message:'Job not found!'});
       }
-      if(didUserAlreadyApplied){
+      if(!didUserAlreadyApplied){
         return res.status(400).json({success:false,message:'You have already applied for the job!'});
       }
+  
+
       const sentApplication=await JobApplication.create({
         jobId,
         userId,
-        message,
         contact,
         resume,
       });

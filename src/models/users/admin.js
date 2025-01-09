@@ -5,7 +5,6 @@ const sequelize = require('../../configs/sequelize'); // Assuming this is your s
 const Admin = sequelize.define('Admin', {
   name: {
     type: DataTypes.STRING,
-    unique: true,
     allowNull: false,
   },
   password: {

@@ -19,7 +19,7 @@ const router = express.Router();
 
 router.post('/login', loginAdmin); 
 router.get('/fetchApplications', fetchApplications); 
-router.post('/handleApplicationStatus/:userId/:applicationId', acceptApplication); 
+router.put('/handleApplicationStatus/:userId/:applicationId/:status', acceptApplication); 
 router.post('/singleUpload',upload.single('file'),uploadSingleFile);
 router.post('/multipleUpload',upload.array('files',5),uploadMultipleFile);
 
@@ -46,7 +46,7 @@ router.get('/fetchTrainerByName',fetchTrainerByName);
 //job
 router.post('/postJob',postJob);
 router.get('/fetchJobApplications',fetchJobApplications);
-router.post('/handleJobApplication',handleJobApplications);
+router.put('/handleJobApplication/:applicationId',handleJobApplications);
 
 //  client
 router.post('/createClient',createClient);

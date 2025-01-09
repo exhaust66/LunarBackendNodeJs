@@ -2,7 +2,7 @@ const multer=require('multer');
 
 const storage=multer.diskStorage({
     destination:(req,file,cb)=>{
-        let folder='src/uploads/productUploads';
+        let folder='src/uploads/general';
 
         if(req.body.category){
             folder=`./src/uploads/${req.body.category}`;

@@ -6,18 +6,18 @@ const User = require('../models/users/user');
 // Register new User
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password, role } = req.body; // Extract name and email from the request body
-    
+        const { name, email, password } = req.body; // Extract name and email from the request body
+        const role = "User";
         // Validate required fields
-        if (!name || !email || !password || !role) {
+        if (!name || !email || !password ) {
             return res.status(422).json({ success: false, message: "All fields are required!" });
         }
 
         // Validate role against allowed values
-        const allowedRoles = ["Student", "Trainer", "Client"];
+        const allowedRoles = ["Student", "Trainer", "Client", "User"];
         if (!allowedRoles.includes(role)) {
             console.error("Invalid role provided:", role); 
-            return res.status(422).json({ success: false, message: "Invalid role! Must be Student, Trainer, or Client." });
+            return res.status(422).json({ success: false, message: "Invalid role! Must be Student,User, Trainer, or Client." });
         }
         //checking if user email already exists
         const alreadyExists = await User.findOne({where:{email}});

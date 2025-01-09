@@ -4,6 +4,8 @@ const userRoutes=require('./routes/users/userRoutes');
 const studentRoutes=require('./routes/users/studentRoutes');
 const adminRoutes=require('./routes/users/adminRoutes');
 const trainerRoutes=require('./routes/users/trainerRoutes');
+const path = require('path');
+
 const cors = require('cors');
 //neccessary imports
 require('dotenv').config();
@@ -12,6 +14,8 @@ require('./sync');
 const app=express();
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'src/uploads')));
+
 
 
 //available routes

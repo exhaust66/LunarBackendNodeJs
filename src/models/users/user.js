@@ -15,15 +15,15 @@ const User = sequelize.define('User', {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
+
   },
   password: {
     type: DataTypes.STRING,
     allowNull: false,
   },
   role: {
-    type: DataTypes.ENUM('Admin', 'Student', 'Trainer', 'Client'),
-    defaultValue: 'Student',
+    type: DataTypes.ENUM('User','Admin', 'Student', 'Trainer', 'Client'),
+    defaultValue: 'User',
     allowNull: false,
   },
   phone: {
@@ -64,6 +64,13 @@ User.associate=(models)=>{
       as:'application',
     });
 };
+User.associate=(models)=>{
+  User.hasOne(models.JobApplications,{
+    foreignKey:'userId',
+    as:'jobApplications',
+  });
+};
+
 
 User.associate=(models)=>{
   User.hasOne(models.Client, {

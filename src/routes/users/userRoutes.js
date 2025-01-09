@@ -22,6 +22,6 @@ router.post('/updateTrainerProfile',[auth,isTrainer],checkTrainerAuthenticity,up
 router.post('/postApplication/:userId/:programId',createApplications);
 
 //router for job application
-router.post('/sendJobApplication',upload.single('file'),sendJobApplication);
+router.post('/sendJobApplication/:userId/:jobId',upload.single('file'),sendJobApplication);
 
 module.exports=router;

@@ -56,7 +56,7 @@ const fetchApplications = async (req, res) => {
         {
           model: User, 
           as: 'user',  
-          attributes: ['name'],  
+          attributes: ['id','name'],  
         },
         {
           model: Program,
@@ -80,8 +80,7 @@ const fetchApplications = async (req, res) => {
 //handling status change and creating student and enrollment if accepted
 const acceptApplication = async (req, res) => {
   try {
-    const { status } = req.body;
-    const { userId, applicationId } = req.params;
+    const { userId, applicationId, status } = req.params;
 
     // Validate input
     if (!userId || !applicationId || !status) {
@@ -130,11 +129,21 @@ const acceptApplication = async (req, res) => {
         message: 'Application Accepted!',
         data: { student, enrollment },
       });
+    } else if (status === 'Rejected') {
+      // Handle 'Rejected' status
+      application.status = 'Rejected';
+      await application.save();
+
+      // Respond with rejection confirmation
+      res.status(200).json({
+        success: true,
+        message: 'Application Rejected!',
+      });
     } else {
-      // Handle other statuses (optional)
+      // Handle invalid status
       return res.status(400).json({
         success: false,
-        message: `Status '${status}' is not valid! Please provide 'Accepted' status.`,
+        message: `Status '${status}' is not valid! Please provide either 'Accepted' or 'Rejected' status.`,
       });
     }
   } catch (err) {
@@ -327,11 +336,22 @@ const postJob = async (req, res) => {
 //get req to fetch all job applications
 const fetchJobApplications = async (req, res) => {
   try {
-    const jobApplications = await JobApplication.findAll();
+    const jobApplications = await JobApplication.findAll({
+      include: [
+        {
+          model: User,
+          as:'users',
+          attributes: ['name', 'email'], // Include only the username and email fields
+        },
+      ],
+    });
 
-    if (!jobApplications) {
-      return res.status(400).json({ success: false, message: 'No any applications found!' });
+    // Check if jobApplications is an empty array
+    if (jobApplications.length === 0) {
+      console.log("Empty Job Applications");
+      return res.status(404).json({ success: false, message: 'No applications found!' });
     }
+
     return res.status(200).json({ success: true, data: jobApplications });
   } catch (err) {
     console.error(err);
@@ -339,18 +359,24 @@ const fetchJobApplications = async (req, res) => {
   }
 };
 
+
 //handling job applications
 const handleJobApplications = async (req, res) => {
   try {
-    const { applicationId, status } = req.body;
+    const {  status } = req.body;
+    const {applicationId} = req.params;
 
     if (!applicationId || !status) {
       return res.status(400).json({ success: false, message: 'Missing Required Fields!' });
     }
 
     const update = await Applications.update({ status: status }, { where: { id: applicationId } });
-
-    res.status(200).json({ success: true, data: update, message: 'Application Accepted!' });
+    if(status==="Accepted"){
+      return res.status(200).json({ success: true, data: update, message: 'Application Accepted!' });
+    }
+    if(status==="Rejected"){
+      res.status(200).json({ success: true, data: update, message: 'Application Rejected!' });
+      }
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Internal Server Error!' });
