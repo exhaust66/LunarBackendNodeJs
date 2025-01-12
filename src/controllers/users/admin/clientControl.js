@@ -1,7 +1,7 @@
 //new  methods for clients here...
 //client methods from adminController will be transferred here...
 
-const Client = require('../../models/users/client');
+const Client = require('../../../models/users/client');
 const { Op } = require('sequelize');
 const cron = require('node-cron');
 //create client  after package purchase

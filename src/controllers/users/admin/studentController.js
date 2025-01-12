@@ -1,5 +1,5 @@
-const User=require('../../models/users/user');
-const Student= require('../../models/users/student');
+const User=require('../../../models/users/user');
+const Student= require('../../../models/users/student');
 
 //middleware for ADMIN to create student id
 const checkStudentAuthenticity = async(req,res,next) =>{

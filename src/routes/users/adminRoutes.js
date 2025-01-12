@@ -4,24 +4,24 @@ const upload = require('../../configs/multer');
 const auth = require('../../middleware/decryptToken');
 const {isAdmin} = require('../../middleware/checkRole');
 
-const {loginAdmin,handleJobApplications,fetchApplications,fetchAllStudents ,fetchStudentByName, fetchTrainerByName, fetchAllTrainers, acceptApplication,postJob,fetchJobApplications} = require('../../controllers/users/adminController');
-const {createEmployee,fetchAllEmployees,editEmployeeDetails}= require('../../controllers/users/adminController'); 
+const {loginAdmin,handleJobApplications,fetchApplications,fetchAllStudents ,fetchStudentByName, fetchTrainerByName, fetchAllTrainers, acceptApplication,postJob,fetchJobApplications, } = require('../../controllers/users/admin/adminController');
+const {createEmployee,fetchAllEmployees,editEmployeeDetails,deleteEmployee}= require('../../controllers/users/admin/employeeControl'); 
 const {uploadSingleFile,uploadMultipleFile}=require('../../controllers/productUpload');
-const { checkTrainerAuthenticity,createTrainer,assignProgram } = require('../../controllers/users/trainerController');
-const { checkStudentAuthenticity, createStudent } = require('../../controllers/users/studentController');
+const { checkTrainerAuthenticity,createTrainer,assignProgram } = require('../../controllers/users/admin/trainerController');
+const { checkStudentAuthenticity, createStudent } = require('../../controllers/users/admin/studentController');
 const {getUsers}=require('../../controllers/users/userController');
 const { createProgram } = require('../../controllers/programController'); 
-const {createClient,fetchAllClients,editClientDetails,updateRenewalStatus,deleteClient} = require('../../controllers/users/clientControl');
+const {createClient,fetchAllClients,editClientDetails,updateRenewalStatus,deleteClient} = require('../../controllers/users/admin/clientControl');
 
 
 const app=express();
 const router = express.Router();
 
 router.post('/login', loginAdmin); 
-router.get('/fetchApplications', fetchApplications); 
-router.put('/handleApplicationStatus/:userId/:applicationId/:status', acceptApplication); 
-router.post('/singleUpload',upload.single('file'),uploadSingleFile);
-router.post('/multipleUpload',upload.array('files',5),uploadMultipleFile);
+router.get('/fetchApplications', [auth,isAdmin],fetchApplications); 
+router.put('/handleApplicationStatus/:userId/:applicationId/:status',[auth,isAdmin], acceptApplication); 
+router.post('/singleUpload',[auth,isAdmin],upload.single('file'),uploadSingleFile);
+router.post('/multipleUpload',[auth,isAdmin],upload.array('files',5),uploadMultipleFile);
 
 //HANDLING OTHER USERS ----------------------------------------------------------
 //for Trainer
@@ -33,32 +33,33 @@ router.post('/createStudent',[auth,isAdmin],checkStudentAuthenticity,createStude
 //for programs
 //get all users details
 router.get('/getUsers',[auth,isAdmin],getUsers);
-router.post('/programs', createProgram);
+router.post('/programs', [auth,isAdmin],createProgram);
 
 //fetch students
-router.get('/fetchAllStudents', fetchAllStudents); 
-router.get('/fetchStudentByName', fetchStudentByName); 
+router.get('/fetchAllStudents',[auth,isAdmin], fetchAllStudents); 
+router.get('/fetchStudentByName',[auth,isAdmin], fetchStudentByName); 
 
 //fetch trainer
-router.get('/fetchAllTrainers',fetchAllTrainers);
-router.get('/fetchTrainerByName',fetchTrainerByName);
+router.get('/fetchAllTrainers',[auth,isAdmin],fetchAllTrainers);
+router.get('/fetchTrainerByName',[auth,isAdmin],fetchTrainerByName);
 
 //job
-router.post('/postJob',postJob);
-router.get('/fetchJobApplications',fetchJobApplications);
-router.put('/handleJobApplication/:applicationId',handleJobApplications);
+router.post('/postJob',[auth,isAdmin],postJob);
+router.get('/fetchJobApplications',[auth,isAdmin],fetchJobApplications);
+router.put('/handleJobApplication/:applicationId',[auth,isAdmin],handleJobApplications);
 
 //  client
-router.post('/createClient',createClient);
-router.delete('/deleteClient/:id',deleteClient);
-router.put('/updateRenewalStatus',updateRenewalStatus);
-router.get('/fetchAllClients',fetchAllClients);
-router.put('/editClientDetails/:id',editClientDetails);
+router.post('/createClient',[auth,isAdmin],createClient);
+router.delete('/deleteClient/:id',[auth,isAdmin],deleteClient);
+router.put('/updateRenewalStatus',[auth,isAdmin],updateRenewalStatus);
+router.get('/fetchAllClients',[auth,isAdmin],fetchAllClients);
+router.put('/editClientDetails/:id',[auth,isAdmin],editClientDetails);
 
 //employees
-router.post('/createEmployee',createEmployee);
-router.get('/fetchAllEmployees',fetchAllEmployees);
-router.post('/editEmployeeDetails',editEmployeeDetails);
+router.post('/createEmployee',[auth,isAdmin],createEmployee);
+router.get('/fetchAllEmployees',[auth,isAdmin],fetchAllEmployees);
+router.delete('/deleteEmployee/:id',[auth,isAdmin],deleteEmployee);
+router.put('/editEmployeeDetails/:id',[auth,isAdmin],editEmployeeDetails);
 
 app.use((err, req, res, next) => {
     console.error(err); 

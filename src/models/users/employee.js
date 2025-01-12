@@ -3,8 +3,12 @@ const sequelize=require('../../configs/sequelize');
 const User = require('./user');
 
 const Employee = sequelize.define('Employee',{
-    userId:{
-        type:DataTypes.INTEGER,
+    // userId:{
+    //     type:DataTypes.INTEGER,
+    //     allowNull:false,
+    // },
+    name:{
+        type:DataTypes.STRING,
         allowNull:false,
     },
     position:{
@@ -33,9 +37,9 @@ const Employee = sequelize.define('Employee',{
     },
 });
 
-Employee.belongsTo(User, {
-    foreignKey: 'userId',
-    as: 'user',
-});
+// Employee.belongsTo(User, {
+//     foreignKey: 'userId',
+//     as: 'user',
+// });
 
 module.exports=Employee;

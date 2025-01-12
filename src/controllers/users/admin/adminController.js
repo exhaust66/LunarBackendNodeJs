@@ -1,20 +1,20 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const Sequelize = require('../../configs/sequelize');
+const Sequelize = require('../../../configs/sequelize');
 const { Op } = require('sequelize');
-const Admin = require('../../models/users/admin');
-const Program = require('../../models/program');
-const Student = require('../../models/users/student');
-const User = require('../../models/users/user');
-const Enrollment = require('../../models/enrollment');
-const Applications = require('../../models/applications');
-const Trainer = require('../../models/users/trainer');
+const Admin = require('../../../models/users/admin');
+const Program = require('../../../models/program');
+const Student = require('../../../models/users/student');
+const User = require('../../../models/users/user');
+const Enrollment = require('../../../models/enrollment');
+const Applications = require('../../../models/applications');
+const Trainer = require('../../../models/users/trainer');
 const schedule = require('node-schedule');
-const Job = require('../../models/job');
-const JobApplication = require('../../models/jobApplication');
-const { Product } = require('../../models/product');
-const Client = require('../../models/users/client');
-const Employee = require('../../models/users/employee');
+const Job = require('../../../models/job');
+const JobApplication = require('../../../models/jobApplication');
+const { Product } = require('../../../models/product');
+const Client = require('../../../models/users/client');
+const Employee = require('../../../models/users/employee');
 
 const loginAdmin = async (req, res) => {
   const { username, password } = req.body;
@@ -383,23 +383,23 @@ const handleJobApplications = async (req, res) => {
   }
 };
 
-//create employee handler..
+
 const createEmployee = async (req, res) => {
   try {
-    const { userId, position, dateOfHire, salary, type, arrivalTime, departureTime } = req.body;
+    const { name, position, dateOfHire, salary, type, arrivalTime, departureTime } = req.body;
 
-    if (!userId || !dateOfHire || !type) {
+    if (!name || !dateOfHire || !type) {
       return res.status(400).json({ success: false, message: 'Missing Required Fields!' });
     }
 
-    const isUser = await User.findByPk(userId);
+    // const isUser = await User.findByPk(userId);
 
-    if (!isUser) {
-      return res.status(400).json({ success: false, message: 'User Not Found!' });
-    }
+    // if (!isUser) {
+    //   return res.status(400).json({ success: false, message: 'User Not Found!' });
+    // }
 
     const createdEmployee = await Employee.create({
-      userId,
+      name,
       position,
       dateOfHire,
       salary,
@@ -409,10 +409,10 @@ const createEmployee = async (req, res) => {
     });
 
     if (!createdEmployee) {
-      return res.status(400).json({ success: false, message: 'Failed To Create Client!' });
+      return res.status(400).json({ success: false, message: 'Failed To Create Employee!' });
     }
 
-    return res.status(200).json({ success: true, message: 'Client Created Successful!', data: createdEmployee });
+    return res.status(200).json({ success: true, message: 'Employee Created Successful!', data: createdEmployee });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Internal Server Error!' });
@@ -421,13 +421,15 @@ const createEmployee = async (req, res) => {
 //fetch All Employees
 const fetchAllEmployees = async (req, res) => {
   try {
-    const employees = await Employee.findAll({
-      include: [{
-        model: User,
-        as: 'user',
-        attributes: ['name', 'email', 'address'],
-      }]
-    });
+    const employees = await Employee.findAll(
+    //   {
+    //   include: [{
+    //     model: User,
+    //     as: 'user',
+    //     attributes: ['name', 'email', 'address'],
+    //   }]
+    // }
+  );
 
     if (!employees) {
       return res.status(400).json({ success: false, message: 'Failed To Fetch Employees!' });
@@ -443,18 +445,19 @@ const fetchAllEmployees = async (req, res) => {
 //edit employee details
 const editEmployeeDetails = async (req, res) => {
   try {
-    const { clientId, position, dateOfHire, salary, type, arrivalTime, departureTime } = req.body;
+    const {  position, dateOfHire, salary, type, arrivalTime, departureTime } = req.body;
+    const {employeeId} = req.params;
 
-    if (!clientId || !position || !dateOfHire || !salary || !type || !arrivalTime || !departureTime) {
+    if ( !position || !dateOfHire || !salary || !type || !arrivalTime || !departureTime) {
       return res.status(400).json({ success: false, message: 'Missing Required Fields!' });
     }
 
-    const [affectedRows] = await Employee.update({ position: position, dateOfHire: dateOfHire, salary: salary, type: type, arrivalTime: arrivalTime, departureTime: departureTime }, { where: { id: clientId } });
+    const [affectedRows] = await Employee.update({ position: position, dateOfHire: dateOfHire, salary: salary, type: type, arrivalTime: arrivalTime, departureTime: departureTime }, { where: { id: employeeId } });
 
     if (affectedRows === 0) {
       return res.status(400).json({ success: false, message: 'Failed To Update!' });
     }
-    const update = await Employee.findByPk(clientId);
+    const update = await Employee.findByPk(employeeId);
 
     if (!update) {
       return res.status(400).json({ success: false, message: 'Failed To Find Employee!' });
@@ -468,8 +471,32 @@ const editEmployeeDetails = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error!' });
   }
 };
+
+//delete a employee
+const deleteEmployee = async (req, res)=>{
+
+    try{
+        
+    const {id} = req.params;
+
+    if(!id){
+        return res.status(400).json({success:false,message:'Employee Id Required'});
+    }
+    const employee = await Employee.findByPk(id);
+
+    if(!employee){
+        return res.status(404).json({success:false,message:'Cannot Find Employee!'});
+    }
+
+    await employee.destroy();
+
+    res.status(200).json({success:true,message:'Employee Deleted Successfully!'});
+    }catch(err){
+        res.status(500).json({success:false,message:'Internal Server Error!'});
+    }
+};
 module.exports = {
   loginAdmin, fetchApplications, acceptApplication, fetchAllStudents,
   fetchStudentByName, fetchAllTrainers, fetchTrainerByName, postJob, fetchJobApplications,
-  handleJobApplications,createEmployee, fetchAllEmployees, editEmployeeDetails
+  handleJobApplications
 };

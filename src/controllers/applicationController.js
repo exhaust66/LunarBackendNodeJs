@@ -1,7 +1,7 @@
 const Applications = require('../models/applications');
 const Student = require('../models/users/student');
 
-
+//application to enroll for trainings or courses
 const createApplications = async (req, res) => {
     try {
         const { userId, programId } = req.params;

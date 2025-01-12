@@ -7,7 +7,7 @@ const upload = require('../../configs/multer');
 
 //required imports
 const {createApplications}=require('../../controllers/applicationController');
-const {checkTrainerAuthenticity,updateTrainerProfile } = require('../../controllers/users/trainerController');
+const {checkTrainerAuthenticity,updateTrainerProfile } = require('../../controllers/users/admin/trainerController');
 const {updateUserProfile,sendJobApplication} = require('../../controllers/users/userController');
 
 
