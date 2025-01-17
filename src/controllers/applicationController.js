@@ -1,27 +1,39 @@
 const Applications = require('../models/applications');
-const Student = require('../models/users/student');
+const User = require('../models/users/user');
+const Program = require('../models/program');
 
-//application to enroll for trainings or courses
-const createApplications = async (req, res) => {
-    try {
-        const { userId, programId } = req.params;
-        const type = 'Trainings';
-        if (!userId || !programId) {
-            return res.status(400).json({ Success: false, message: 'Missing UserId or ProgramId!' });
-        }
-        const applications = await Applications.create({userId,type,programId});
-    
-        res.status(200).json({
-            success: true,
-            message: 'Application Submitted Successfully!',
-            data: applications
-        });
-    } catch (err) {
-        console.error(err);
+
+//handling get request for applications
+const fetchApplications = async (req, res) => {
+  try {
+    const applications = await Applications.findAll({
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name', 'email'],
+        },
+        {
+          model: Program,
+          as: 'program',
+          attributes: ['title'],
+        },
+      ],
+      attributes: { exclude: ['userId', 'programId'] },  // Exclude userId and programId from the Application model
+    });
+    if (!applications) {
+      res.status(400).json({ success: false, message: 'No Applications Found!' });
     }
-}
+    res.status(200).json({ success: true, data: applications });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ status: 'Failed', message: 'Internal Server Error', });
+  }
+};
 
 
 
 
-module.exports={createApplications};
+
+module.exports = { fetchApplications};

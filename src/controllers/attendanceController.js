@@ -34,7 +34,7 @@ const getEnrollmentsByProgramId = async (programId) => {
 
 //get handler that is used to fetch enrollments of particual program with its programId
 const fetchEnrollmentsByProgramId = async (req, res) => {
-    const { programId } = req.body;
+    const { programId } = req.params;
 
     if (!programId) {
         return res.status(400).json({ status: 'Failed', message: 'Required Program Id' });
@@ -58,7 +58,9 @@ const fetchEnrollmentsByProgramId = async (req, res) => {
 //recording attendance ----handling POST request for attendance
 const postAttendance = async (req, res) => {
     try {
-        const { programId, attendanceRecords } = req.body;
+        const {  attendanceRecords } = req.body;
+        const {programId} = req.params;
+
         console.log(programId,attendanceRecords);
         if (!programId || !attendanceRecords || !Array.isArray(attendanceRecords)) {
             return res.status(400).json({ status: 'Failed', message: 'Missing or Invalid Fields!' });
@@ -104,7 +106,7 @@ const postAttendance = async (req, res) => {
 // Get attendance by ProgramId
 const getAttendance = async (req, res) => {
     try {
-        const { programId } = req.body;
+        const { programId } = req.params;
 
         if (!programId) {
             return res.status(400).json({ status: 'Failed', message: 'Required ProgramId' });

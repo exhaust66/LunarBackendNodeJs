@@ -1,6 +1,7 @@
 const Job = require('../../models/job');
 const JobApplication = require('../../models/jobApplication');
 const User=require('../../models/users/user');
+const Application = require('../../models/applications');
 
 // Controller to fetch all users
 const getUsers = async (req, res) => {
@@ -101,5 +102,24 @@ const sendJobApplication=async (req,res)=>{
     res.status(500).json({success:false,message:'Internal Server Error!'});
   }
 }
+//application to enroll for trainings or courses
+const createApplications = async (req, res) => {
+  try {
+      const { userId, programId } = req.params;
+      const type = 'Trainings';
+      if (!userId || !programId) {
+          return res.status(400).json({ Success: false, message: 'Missing UserId or ProgramId!' });
+      }
+      const applications = await Application.create({userId,type,programId});
+  
+      res.status(200).json({
+          success: true,
+          message: 'Application Submitted Successfully!',
+          data: applications
+      });
+  } catch (err) {
+      console.error(err);
+  }
+}
 
-module.exports={getUsers,updateUserProfile,sendJobApplication};
+module.exports={getUsers,updateUserProfile,sendJobApplication,createApplications};

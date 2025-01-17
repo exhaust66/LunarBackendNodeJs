@@ -4,14 +4,16 @@ const upload = require('../../configs/multer');
 const auth = require('../../middleware/decryptToken');
 const {isAdmin} = require('../../middleware/checkRole');
 
-const {loginAdmin,handleJobApplications,fetchApplications,fetchAllStudents ,fetchStudentByName, fetchTrainerByName, fetchAllTrainers, acceptApplication,postJob,fetchJobApplications, } = require('../../controllers/users/admin/adminController');
-const {createEmployee,fetchAllEmployees,editEmployeeDetails,deleteEmployee}= require('../../controllers/users/admin/employeeControl'); 
+const {loginAdmin,  } = require('../../controllers/users/adminDuties/adminController');
+const {postJob,editJob,fetchJobApplications,handleJobApplications,fetchAllJobs,deleteJob} = require('../../controllers/users/adminDuties/jobControl');
+const { acceptApplication,fetchApplications} = require('../../controllers/applicationController');
+const {createEmployee,fetchAllEmployees,editEmployeeDetails,deleteEmployee}= require('../../controllers/users/adminDuties/employeeControl'); 
 const {uploadSingleFile,uploadMultipleFile}=require('../../controllers/productUpload');
-const { checkTrainerAuthenticity,createTrainer,assignProgram } = require('../../controllers/users/admin/trainerController');
-const { checkStudentAuthenticity, createStudent } = require('../../controllers/users/admin/studentController');
+const { checkTrainerAuthenticity,createTrainer,assignProgram,fetchTrainerByName, fetchAllTrainers } = require('../../controllers/users/adminDuties/trainerController');
+const { checkStudentAuthenticity, createStudent,fetchAllStudents ,fetchStudentByName } = require('../../controllers/users/adminDuties/studentController');
 const {getUsers}=require('../../controllers/users/userController');
 const { createProgram } = require('../../controllers/programController'); 
-const {createClient,fetchAllClients,editClientDetails,updateRenewalStatus,deleteClient} = require('../../controllers/users/admin/clientControl');
+const {createClient,fetchAllClients,editClientDetails,updateRenewalStatus,deleteClient} = require('../../controllers/users/adminDuties/clientControl');
 
 
 const app=express();
@@ -44,8 +46,11 @@ router.get('/fetchAllTrainers',[auth,isAdmin],fetchAllTrainers);
 router.get('/fetchTrainerByName',[auth,isAdmin],fetchTrainerByName);
 
 //job
+router.put('/updateJob/:id',[auth,isAdmin],editJob);
+router.delete('/deleteJob/:id',[auth,isAdmin],deleteJob);
 router.post('/postJob',[auth,isAdmin],postJob);
 router.get('/fetchJobApplications',[auth,isAdmin],fetchJobApplications);
+router.get('/fetchAllJobs',[auth,isAdmin],fetchAllJobs);
 router.put('/handleJobApplication/:applicationId',[auth,isAdmin],handleJobApplications);
 
 //  client

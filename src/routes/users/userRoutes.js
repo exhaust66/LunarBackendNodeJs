@@ -6,8 +6,8 @@ const {isTrainer} = require('../../middleware/checkRole');
 const upload = require('../../configs/multer');
 
 //required imports
-const {createApplications}=require('../../controllers/applicationController');
-const {checkTrainerAuthenticity,updateTrainerProfile } = require('../../controllers/users/admin/trainerController');
+const {createApplications}=require('../../controllers/users/userController');
+const {checkTrainerAuthenticity,updateTrainerProfile } = require('../../controllers/users/adminDuties/trainerController');
 const {updateUserProfile,sendJobApplication} = require('../../controllers/users/userController');
 
 
